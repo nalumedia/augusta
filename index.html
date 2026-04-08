@@ -1,0 +1,1592 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026 Masters Pool Predictor — Best 4 of 6</title>
+<style>
+  :root {
+    --green-dk: #0e4d2a;
+    --green:    #1a6b3c;
+    --green-lt: #2a8f50;
+    --gold:     #d4a847;
+    --cream:    #f5f1e6;
+    --bg:       #0a1a10;
+    --card:     #11261a;
+    --card2:    #163020;
+    --border:   #234c34;
+    --text:     #e8e4d2;
+    --muted:    #8fa294;
+    --accent:   #f4c542;
+    --bad:      #c44a3a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+    font-size: 14px; line-height: 1.4; }
+  header { background: linear-gradient(135deg, var(--green-dk), var(--green));
+    padding: 22px 28px; border-bottom: 2px solid var(--gold); }
+  header h1 { margin: 0; font-size: 24px; color: var(--cream); letter-spacing: 0.3px; }
+  header .subtitle { color: var(--cream); opacity: 0.75; font-size: 13px; margin-top: 4px; }
+  header .stamp { color: var(--gold); opacity: 0.9; font-size: 11px; margin-left: 6px; }
+  header .stamp b { color: var(--cream); }
+  .layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(380px, 1fr); gap: 20px; padding: 20px 28px; max-width: 1600px; margin: 0 auto; }
+  @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card h2 { margin: 0 0 12px 0; font-size: 15px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+  .card h3 { margin: 12px 0 8px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500; }
+
+  /* Player table */
+  .table-wrap { max-height: 620px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { position: sticky; top: 0; background: var(--card2); z-index: 2; }
+  th { padding: 9px 6px; text-align: left; color: var(--muted); font-weight: 500;
+    border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; white-space: nowrap; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; }
+  th:hover { color: var(--gold); }
+  th.sorted { color: var(--gold); }
+  th.sorted::after { content: " ▾"; font-size: 9px; }
+  td { padding: 6px 6px; border-bottom: 1px solid rgba(35,76,52,0.4); }
+  tr.player-row { cursor: pointer; transition: background 0.1s; }
+  tr.player-row:hover { background: var(--card2); }
+  tr.player-row.selected { background: rgba(212, 168, 71, 0.18); }
+  tr.player-row.selected td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.name { font-weight: 500; }
+  .pill { display: inline-block; padding: 1px 7px; border-radius: 10px;
+    font-size: 11px; font-weight: 600; background: var(--green-dk); color: var(--cream); }
+
+  /* Selection panel */
+  .selected-list { display: flex; flex-direction: column; gap: 6px; min-height: 180px; }
+  .sel-row { display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; background: var(--card2); border: 1px solid var(--border); border-radius: 5px; font-size: 13px; }
+  .sel-row .nm { font-weight: 500; }
+  .sel-row .mn { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .sel-empty { padding: 10px; color: var(--muted); font-style: italic; text-align: center;
+    border: 1px dashed var(--border); border-radius: 5px; }
+  .remove-btn { background: none; border: none; color: var(--bad); cursor: pointer; font-size: 16px; padding: 0 4px; }
+  .remove-btn:hover { color: #ff6a5a; }
+
+  /* Result block */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
+  .kpi { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; }
+  .kpi .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi .val { font-size: 22px; font-weight: 600; color: var(--cream); font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .kpi .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .kpi.hero { grid-column: 1 / -1; background: linear-gradient(135deg, var(--green-dk), var(--green));
+    border-color: var(--gold); }
+  .kpi.hero .val { color: var(--gold); font-size: 30px; }
+
+  /* Histogram */
+  #histCanvas { width: 100%; height: 160px; background: var(--card2);
+    border: 1px solid var(--border); border-radius: 6px; display: block; margin-top: 6px; }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button.btn { background: var(--green); color: var(--cream); border: 1px solid var(--green-lt);
+    padding: 8px 14px; border-radius: 5px; cursor: pointer; font-size: 13px; font-weight: 500;
+    transition: background 0.15s; }
+  button.btn:hover { background: var(--green-lt); }
+  button.btn.primary { background: var(--gold); color: #1a1200; border-color: var(--gold); }
+  button.btn.primary:hover { background: #e8ba52; }
+  button.btn.ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+  button.btn.ghost:hover { color: var(--cream); border-color: var(--muted); }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Parameter sliders */
+  .params { display: grid; gap: 10px; }
+  .param { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
+  .param label { font-size: 12px; color: var(--muted); }
+  .param .val { font-variant-numeric: tabular-nums; color: var(--cream); font-size: 12px; }
+  .param input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--gold); }
+
+  /* Filter */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .filter-row input { flex: 1; background: var(--card2); border: 1px solid var(--border);
+    color: var(--text); padding: 8px 10px; border-radius: 5px; font-size: 13px; }
+  .filter-row input:focus { outline: none; border-color: var(--gold); }
+  .counter { font-size: 12px; color: var(--muted); padding: 8px 0 0 0; }
+  .counter b { color: var(--gold); }
+
+  .explain { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .explain b { color: var(--cream); font-weight: 500; }
+  .explain code { background: var(--card2); padding: 1px 5px; border-radius: 3px;
+    font-size: 11px; color: var(--gold); }
+
+  .status { font-size: 11px; color: var(--muted); margin-left: auto; align-self: center; }
+  .footer-note { text-align: center; padding: 20px; color: var(--muted); font-size: 11px; }
+
+  /* Historical backtest */
+  .hist-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .hist-table th { padding: 6px 6px; color: var(--muted); font-weight: 500;
+    border-bottom: 1px solid var(--border); text-align: left; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px; }
+  .hist-table td { padding: 7px 6px; border-bottom: 1px solid rgba(35,76,52,0.35); font-variant-numeric: tabular-nums; vertical-align: top; }
+  .hist-table tr:last-child td { border-bottom: none; }
+  .hist-year { color: var(--gold); font-weight: 600; width: 48px; }
+  .hist-total { font-size: 15px; font-weight: 600; color: var(--cream); width: 60px; }
+  .hist-par { font-size: 11px; width: 60px; }
+  .hist-par.good { color: #7ed490; }
+  .hist-par.bad { color: #e8826f; }
+  .hist-par.neutral { color: var(--muted); }
+  .hist-na { color: var(--muted); font-style: italic; font-size: 12px; }
+  .hist-breakdown { color: var(--muted); font-size: 11px; line-height: 1.7; }
+  .chip { display: inline-block; padding: 1px 6px; border-radius: 3px;
+    margin-right: 4px; margin-bottom: 2px; background: var(--card); border: 1px solid var(--border);
+    font-size: 10.5px; }
+  .chip.used { background: rgba(126,212,144,0.15); color: #9ed8a8; border-color: #3a6e48; font-weight: 600; }
+  .chip.dropped { opacity: 0.55; }
+  .chip.mc { background: rgba(232,130,111,0.15); color: #e8a898; border-color: #6e3d34; }
+  .chip.dnp { background: transparent; color: #556d5f; border-style: dashed; }
+  .hist-summary { background: var(--card2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 12px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+  .hist-summary b { color: var(--gold); font-size: 14px; }
+
+  /* Preset combos */
+  .preset-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .preset { background: var(--card2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 11px 13px; cursor: pointer; transition: all 0.15s; }
+  .preset:hover { background: rgba(212,168,71,0.08); border-color: var(--gold); }
+  .preset .preset-name { color: var(--cream); font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .preset .preset-desc { color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+  .preset .preset-hist { color: var(--gold); font-size: 11px; margin-top: 5px; font-variant-numeric: tabular-nums; }
+
+  /* Flags */
+  .flag { display: inline-block; margin-right: 6px; font-size: 14px; }
+
+  /* Tour chip */
+  .tour-chip { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px;
+    font-weight: 700; letter-spacing: 0.3px; border: 1px solid; }
+  .tour-chip.tour-P { color: #9ed8a8; border-color: #3a6e48; background: rgba(126,212,144,0.14); }
+  .tour-chip.tour-L { color: #e8a898; border-color: #6e3d34; background: rgba(196,74,58,0.14); }
+  .tour-chip.tour-I { color: #b0beb5; border-color: #3c5045; background: rgba(143,162,148,0.12); }
+
+  /* SG:APP trend chip */
+  .sg-chip { display: inline-block; padding: 1px 6px; border-radius: 9px; font-size: 10px;
+    font-weight: 600; letter-spacing: 0.3px; border: 1px solid transparent; font-variant-numeric: tabular-nums;
+    min-width: 38px; text-align: center; }
+  .sg-chip.hot  { background: rgba(244,197,66,0.22);   color: #f4c542; border-color: #8a6f1e; }
+  .sg-chip.warm { background: rgba(126,212,144,0.18);  color: #9ed8a8; border-color: #3a6e48; }
+  .sg-chip.neu  { background: rgba(143,162,148,0.12);  color: #b0beb5; border-color: #3c5045; }
+  .sg-chip.cool { background: rgba(180,140,100,0.15);  color: #d6b08a; border-color: #6a5236; }
+  .sg-chip.cold { background: rgba(196,74,58,0.18);    color: #e8a898; border-color: #6e3d34; }
+
+  /* Augusta fit chip (inline in selected list) */
+  .fit-chip { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 10px;
+    margin-left: 6px; font-variant-numeric: tabular-nums; border: 1px solid var(--border); background: var(--card); color: var(--muted); }
+  .fit-chip.good { color: #9ed8a8; border-color: #3a6e48; }
+  .fit-chip.bad  { color: #e8a898; border-color: #6e3d34; }
+
+  /* Adjustments card */
+  .adj-grid { display: grid; gap: 10px; }
+  .adj-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 11px;
+    background: var(--card2); border: 1px solid var(--border); border-radius: 6px; }
+  .adj-row .adj-label { flex: 1; font-size: 12.5px; color: var(--text); }
+  .adj-row .adj-sub { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+  .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider { position: absolute; cursor: pointer; inset: 0; background: var(--card);
+    border: 1px solid var(--border); border-radius: 20px; transition: 0.15s; }
+  .toggle .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; top: 2px;
+    background: var(--muted); border-radius: 50%; transition: 0.15s; }
+  .toggle input:checked + .slider { background: rgba(212,168,71,0.3); border-color: var(--gold); }
+  .toggle input:checked + .slider:before { transform: translateX(16px); background: var(--gold); }
+  .weather-seg { display: flex; gap: 0; background: var(--card2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .weather-seg button { flex: 1; background: transparent; border: none; color: var(--muted);
+    padding: 9px 8px; font-size: 12px; cursor: pointer; border-right: 1px solid var(--border); transition: 0.12s; }
+  .weather-seg button:last-child { border-right: none; }
+  .weather-seg button:hover { color: var(--cream); }
+  .weather-seg button.active { background: rgba(212,168,71,0.18); color: var(--gold); font-weight: 600; }
+
+  /* Scenario sensitivity bars */
+  .sens-grid { display: grid; gap: 6px; }
+  .sens-row { display: grid; grid-template-columns: 90px 1fr 64px; gap: 10px; align-items: center; font-size: 12px; }
+  .sens-lbl { color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; font-size: 10px; }
+  .sens-bar-wrap { background: var(--card2); border: 1px solid var(--border); border-radius: 4px; height: 18px; position: relative; overflow: hidden; }
+  .sens-bar { height: 100%; background: linear-gradient(90deg, var(--green), var(--green-lt)); border-right: 1px solid var(--gold); transition: width 0.25s ease; }
+  .sens-bar.soft { background: linear-gradient(90deg, #2a6b8f, #4a9fc4); }
+  .sens-bar.firm { background: linear-gradient(90deg, #8f4a2a, #c47a4a); }
+  .sens-val { font-variant-numeric: tabular-nums; color: var(--cream); font-weight: 600; text-align: right; }
+
+  .compare-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .compare-box { background: var(--card2); border: 1px solid var(--border); border-radius: 5px; padding: 9px 10px; }
+  .compare-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 3px; line-height: 1.3; }
+  .compare-val { font-size: 18px; font-weight: 600; color: var(--cream); font-variant-numeric: tabular-nums; }
+  .compare-val .diff { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .compare-val .diff.good { color: #9ed8a8; }
+  .compare-val .diff.bad { color: #e8a898; }
+
+  /* What Matters card */
+  .matters-wrap { grid-column: 1 / -1; }
+  .matters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 12px; }
+  .matters-item { background: var(--card2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+  .matters-item .rank { display: inline-block; font-size: 11px; color: var(--gold); font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .matters-item h4 { margin: 0 0 6px 0; font-size: 14px; color: var(--cream); }
+  .matters-item p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .matters-item p b { color: var(--text); }
+
+  /* FAQ */
+  .faq-wrap { grid-column: 1 / -1; }
+  .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px 22px; }
+  .faq-item h4 { margin: 0 0 4px 0; font-size: 13px; color: var(--gold); font-weight: 600; }
+  .faq-item p { margin: 0; font-size: 12.5px; color: var(--text); line-height: 1.55; }
+  .faq-item p + p { margin-top: 6px; }
+  .faq-item code { background: var(--card2); padding: 1px 5px; border-radius: 3px; color: var(--gold); font-size: 11px; }
+  .faq-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin: 18px 0 8px 0; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .faq-section-title:first-child { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⛳ 2026 Masters — Best-4-of-6 Pool Predictor</h1>
+  <div class="subtitle">Pick 6 golfers. The 4 lowest 72-hole scores count. Lower is better.
+    <span class="stamp">· Odds last updated <b>Apr 7, 2026</b> · Tournament starts Thu Apr 9</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT: Player table -->
+  <div class="card">
+    <h2>Field &nbsp;<span style="color:var(--muted);font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;">(click to select up to 6)</span></h2>
+    <div class="filter-row">
+      <input id="filter" type="text" placeholder="Search player name…">
+      <button class="btn ghost" id="clearFilter">Clear</button>
+    </div>
+    <div class="table-wrap">
+      <table id="playerTable">
+        <thead><tr>
+          <th data-sort="rank">#</th>
+          <th data-sort="name">Player</th>
+          <th data-sort="age" class="num">Age</th>
+          <th data-sort="tour" title="Tour: PGA, LIV, or International">Tour</th>
+          <th data-sort="sgApp" class="num" title="Strokes Gained: Approach trend, last 12 weeks">SG:APP</th>
+          <th data-sort="winOdds" class="num">Odds</th>
+          <th data-sort="winP" class="num">Win%</th>
+          <th data-sort="mcP" class="num">Cut%</th>
+          <th data-sort="liveMean" class="num sorted">Proj</th>
+          <th data-sort="adjDelta" class="num" title="Augusta-specific ± strokes">Δ</th>
+          <th data-sort="sd" class="num">σ</th>
+        </tr></thead>
+        <tbody id="playerBody"></tbody>
+      </table>
+    </div>
+    <div class="counter" id="counter"></div>
+  </div>
+
+  <!-- RIGHT: Selection + results -->
+  <div style="display:flex;flex-direction:column;gap:20px;min-width:0;">
+
+    <div class="card">
+      <h2>Your 6 picks <span class="status" id="selStatus"></span></h2>
+      <div class="selected-list" id="selectedList"></div>
+      <div class="btn-row">
+        <button class="btn primary" id="useOptimalBtn">Load Optimal Pick</button>
+        <button class="btn" id="findOptimalBtn">Find Optimal…</button>
+        <button class="btn ghost" id="clearSelBtn">Clear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Expected Result <span class="status" id="simStatus"></span></h2>
+      <div class="kpi-grid">
+        <div class="kpi hero">
+          <div class="lbl">Expected Best-4 Total</div>
+          <div class="val" id="kpiMean">—</div>
+          <div class="sub" id="kpiMeanPar">vs. 4×par (1152)</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Std Dev</div>
+          <div class="val" id="kpiSD">—</div>
+          <div class="sub">strokes</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Median (P50)</div>
+          <div class="val" id="kpiP50">—</div>
+          <div class="sub" id="kpiP50Par">—</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Best Case (P10)</div>
+          <div class="val" id="kpiP10">—</div>
+          <div class="sub">10% chance lower</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Worst Case (P90)</div>
+          <div class="val" id="kpiP90">—</div>
+          <div class="sub">10% chance higher</div>
+        </div>
+      </div>
+      <h3>Score Distribution (10,000 sims)</h3>
+      <canvas id="histCanvas" width="600" height="160"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Scenario Analysis & Share</h2>
+      <div class="explain" style="margin-bottom:10px;">
+        Weather sensitivity — how your team's expected best-4 total shifts under each condition. A narrow spread = weather-robust team; a wide spread = boom-or-bust depending on conditions.
+      </div>
+      <div class="sens-grid" id="sensGrid">
+        <div class="sens-row"><span class="sens-lbl">Normal</span>
+          <div class="sens-bar-wrap"><div class="sens-bar" id="sensNeutralBar"></div></div>
+          <span class="sens-val" id="sensNeutralVal">—</span></div>
+        <div class="sens-row"><span class="sens-lbl">Soft / Calm</span>
+          <div class="sens-bar-wrap"><div class="sens-bar soft" id="sensSoftBar"></div></div>
+          <span class="sens-val" id="sensSoftVal">—</span></div>
+        <div class="sens-row"><span class="sens-lbl">Firm / Windy</span>
+          <div class="sens-bar-wrap"><div class="sens-bar firm" id="sensFirmBar"></div></div>
+          <span class="sens-val" id="sensFirmVal">—</span></div>
+      </div>
+
+      <div class="compare-row" id="compareRow">
+        <div class="compare-box">
+          <div class="compare-lbl">Your team (current conditions)</div>
+          <div class="compare-val" id="cmpYou">—</div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-lbl">Baseline optimal (no adjustments)</div>
+          <div class="compare-val" id="cmpBase">1152.7</div>
+        </div>
+        <div class="compare-box">
+          <div class="compare-lbl">Adjusted-optimal (run Find Optimal)</div>
+          <div class="compare-val" id="cmpAdj">—</div>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn" id="copyTextBtn">📋 Copy picks as text</button>
+        <button class="btn" id="copyLinkBtn">🔗 Copy share link</button>
+        <span class="status" id="copyStatus"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Historical Backtest (2019–2025)</h2>
+      <div class="explain" style="margin-bottom:10px;">
+        How would this 6-player team have done at past Masters? Green chips are the 4 scores that counted, gray are dropped, red are missed cuts, dashed are players who didn't play.
+      </div>
+      <table class="hist-table" id="histTable">
+        <thead><tr>
+          <th>Year</th>
+          <th>Best-4</th>
+          <th>vs Par</th>
+          <th>Team breakdown (drag drop shift)</th>
+        </tr></thead>
+        <tbody id="histBody"></tbody>
+      </table>
+      <div class="hist-summary" id="histSummary"></div>
+    </div>
+
+    <div class="card">
+      <h2>Try a Combo</h2>
+      <div class="explain" style="margin-bottom:10px;">
+        A few interesting 6-player teams. Click any to load it — then look at both the simulated expectation and the historical backtest.
+      </div>
+      <div class="preset-grid" id="presetGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Augusta Adjustments</h2>
+      <div class="explain" style="margin-bottom:10px;">
+        Layer Augusta-specific signals on top of the Vegas-derived base model. Each toggle moves projected scores up or down — watch Expected Result and Your 6 Picks refresh live.
+      </div>
+
+      <div class="adj-grid">
+        <div class="adj-row">
+          <div class="adj-label">Course fit (Augusta history)
+            <span class="adj-sub">Top-10 pedigree helps, first-timers and poor records hurt. Range ±1.5 strokes.</span>
+          </div>
+          <label class="toggle"><input type="checkbox" id="togCourseFit" checked><span class="slider"></span></label>
+        </div>
+
+        <div class="param" style="padding: 0 2px;">
+          <label>Course-fit weight <span style="color:var(--muted);">(0 = off, 1 = default, 1.5 = amplified)</span></label>
+          <span class="val" id="fitWeightVal">1.0</span>
+          <input id="fitWeight" type="range" min="0" max="1.5" step="0.1" value="1.0">
+        </div>
+
+        <div class="adj-row">
+          <div class="adj-label">Age curve bump (+0.3)
+            <span class="adj-sub">Applies to players &lt;24 or &gt;42. Augusta rewards experience but punishes decline.</span>
+          </div>
+          <label class="toggle"><input type="checkbox" id="togAge" checked><span class="slider"></span></label>
+        </div>
+
+        <div class="adj-row">
+          <div class="adj-label">LIV rust penalty (+0.4)
+            <span class="adj-sub">54-hole no-cut events aren't great major prep. Applies to LIV players only.</span>
+          </div>
+          <label class="toggle"><input type="checkbox" id="togLiv" checked><span class="slider"></span></label>
+        </div>
+
+        <div class="adj-row" style="display:block;">
+          <div class="adj-label" style="margin-bottom:8px;">Weather scenario
+            <span class="adj-sub">Soft/calm helps bombers; firm/windy rewards ball-strikers and grinders.</span>
+          </div>
+          <div class="weather-seg" id="weatherSeg">
+            <button data-w="neutral" class="active">Normal</button>
+            <button data-w="soft">Soft / Calm</button>
+            <button data-w="firm">Firm / Windy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Model Parameters</h2>
+      <div class="params">
+        <div class="param">
+          <label>Skill scale (higher = bigger gap between best and worst)</label>
+          <span class="val" id="scaleVal">2.0</span>
+          <input id="scale" type="range" min="1.0" max="4.0" step="0.1" value="2.0">
+        </div>
+        <div class="param">
+          <label>Per-tournament σ (shot-to-shot noise)</label>
+          <span class="val" id="sigmaVal">4.5</span>
+          <input id="sigma" type="range" min="2.5" max="8.0" step="0.1" value="4.5">
+        </div>
+        <div class="param">
+          <label>Missed-cut penalty score</label>
+          <span class="val" id="mcVal">310</span>
+          <input id="mcPen" type="range" min="290" max="330" step="1" value="310">
+        </div>
+      </div>
+      <div class="explain" style="margin-top:14px;">
+        <b>How the math works.</b> Vegas outright odds are de-vigged into implied win probabilities, then converted into per-player expected 72-hole scores via
+        <code>μᵢ = 293 − scale · ln(pᵢ / p_uniform)</code>.
+        Each simulation draws a score from <code>Normal(μᵢ, σ)</code>, with probability <code>1−P(make&nbsp;cut)</code> of triggering the missed-cut penalty instead.
+        For your 6 picks, we sort the 6 scores and sum the lowest 4. Repeat 10,000 times to get the expected total and distribution. Default calibration reproduces Scheffler's book win probability (~12%) within 0.5%.
+      </div>
+    </div>
+  </div>
+
+  <div class="card matters-wrap">
+    <h2>What Actually Matters at Augusta</h2>
+    <div class="explain" style="margin-bottom:12px;">
+      Roughly ranked by signal strength. The first four drive most of the Augusta-adjustment math above — the rest are noise once baseline skill is priced in.
+    </div>
+    <div class="matters-grid">
+      <div class="matters-item">
+        <div class="rank">#1 · Strongest</div>
+        <h4>SG: Approach (last 12 weeks)</h4>
+        <p>The single biggest predictor at Augusta by a wide margin. The greens are so severe that iron play into the correct quadrants matters more than anywhere else on tour. <b>Scheffler, Rahm, DeChambeau, Morikawa</b> all elite here — and it shows in the gold SG:APP chips on their player rows.</p>
+      </div>
+      <div class="matters-item">
+        <div class="rank">#2</div>
+        <h4>Driving: distance + accuracy combo</h4>
+        <p>Augusta rewards distance — four par-5s you want to reach in two — <b>and</b> punishes crooked drives on 10, 11, 13, and 18. Pure bombers without control (Finau, Niemann historically) underperform their odds. Flip the Weather toggle to "Soft / Calm" and watch the bombers' projected scores plummet.</p>
+      </div>
+      <div class="matters-item">
+        <div class="rank">#3</div>
+        <h4>Augusta history / Course fit</h4>
+        <p>Past top-10s at Augusta are genuinely predictive — real "horses for courses" signal. Couples, Mickelson, Garcia outperformed their baseline skill at Augusta for years. DataGolf's course-fit adjustment moves projections by ~1–2 strokes for veterans. That's exactly what the <code>Δ</code> column and the Course-fit toggle above encode.</p>
+      </div>
+      <div class="matters-item">
+        <div class="rank">#4</div>
+        <h4>Short game / SG: ARG</h4>
+        <p>Augusta's runoffs mean you miss greens in scary spots. Elite scramblers (Spieth, peak Mickelson, Cameron Smith) punch above their weight because they save pars from places most of the field bogies. Bundled into the course-fit delta for known wizards.</p>
+      </div>
+      <div class="matters-item">
+        <div class="rank">Moderate</div>
+        <h4>Age curve</h4>
+        <p>Masters winners skew 28–36. Under-25 is rare (Spieth '15, Woods '97); over-45 is very rare post-Mickelson '21. Augusta rewards experience but punishes decline. Modeled as a small +0.3 bump at the edges.</p>
+      </div>
+      <div class="matters-item">
+        <div class="rank">Moderate</div>
+        <h4>LIV rust</h4>
+        <p>LIV players face real rust and competitive-reps problems at majors — 54 holes with no cut isn't great prep. The gap is maybe 0.3–0.5 strokes/round of hidden penalty vs. their pre-LIV baseline. Toggle it on and Rahm/DeChambeau/Koepka/DJ slide a bit.</p>
+      </div>
+      <div class="matters-item">
+        <div class="rank">Weak / Noisy</div>
+        <h4>Weather</h4>
+        <p><b>Tournament-wide</b> weather matters — wind disperses the field, soft conditions help bombers — but it's hard to forecast on Monday and it affects everyone. Use the scenario toggle to see how conditions tilt the field ±2–3 strokes before locking picks.</p>
+      </div>
+      <div class="matters-item">
+        <div class="rank">Don't double-count</div>
+        <h4>Putting · World Ranking · Nationality</h4>
+        <p>Putting is the noisiest stat week-to-week and Augusta's greens don't transfer cleanly from regular tour numbers. World Ranking is already baked into Vegas odds — don't count it twice. Nationality is ~zero signal once you control for skill.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card faq-wrap">
+    <h2>How to Use / FAQ</h2>
+
+    <div class="faq-section-title">Getting Started</div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>How do I pick a team?</h4>
+        <p>Click any player card on the left to add them to your 6. Click again to remove. The counter at the top of the pool shows how many you've selected — the right side updates live once you have 6.</p>
+      </div>
+      <div class="faq-item">
+        <h4>What's the "Find Optimal" button?</h4>
+        <p>It brute-forces every combination of 6 from the top 18 players and picks the combo with the lowest expected best-4 total. This is the model's single best answer — usually Scheffler + Rahm + DeChambeau + McIlroy + Schauffele + Åberg.</p>
+      </div>
+      <div class="faq-item">
+        <h4>What are the presets?</h4>
+        <p>Curated "theme" combos — Chalk, LIV All-Stars, Past Champions, etc. Each shows the historical best-4 average across years where all 6 played, so you can compare narratives against actual prior-Masters performance.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Search and filter?</h4>
+        <p>Type a name in the search box to filter the pool. Toggle the tour chips (PGA / LIV / INT) to narrow down. Your selections stay put regardless of filter.</p>
+      </div>
+    </div>
+
+    <div class="faq-section-title">What the Numbers Mean</div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>Expected Best-4 Total</h4>
+        <p>The headline number. It's the average across 10,000 Monte Carlo simulations of the sum of your 4 lowest scores (out of your 6 picks). Lower is better.</p>
+        <p>Par for 4 rounds at Augusta is 288, so <code>4 × 288 = 1152</code> is "all four picks shot par." The "vs par" number tells you how many strokes under (or over) that benchmark your team averages.</p>
+      </div>
+      <div class="faq-item">
+        <h4>σ (sigma)</h4>
+        <p>Standard deviation of your best-4 total across sims. A small σ means your team is consistent; a big σ means boom-or-bust. LIV-heavy teams tend to have higher σ.</p>
+      </div>
+      <div class="faq-item">
+        <h4>P10 / P90</h4>
+        <p>The 10th and 90th percentile outcomes. P10 is your "things broke right" score (beat it 10% of the time), P90 is your "things went sideways" score. The gap between them is your team's realistic range.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Per-player projected score</h4>
+        <p>Each player's mean 72-hole score from the skill model, calibrated so the implied win probabilities match Vegas. Scheffler's ~281 means the model thinks he averages ~−7 at Augusta.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Cut% and Win%</h4>
+        <p>Cut% is the chance that player misses the cut (triggers the penalty). Win% is their modeled chance of posting the outright lowest score of the field in a single sim — roughly matches the de-vigged book price.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Histogram</h4>
+        <p>The distribution of your team's best-4 totals across all 10k sims. A tall narrow peak = consistent team. A long left tail = ceiling upside. The red line marks the mean.</p>
+      </div>
+    </div>
+
+    <div class="faq-section-title">Historical Backtest</div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>How does it work?</h4>
+        <p>For each of the last 7 Masters, we take your 6 picks, grab their actual scores that year, and sum the lowest 4. That's what your team would have scored. If fewer than 4 of your picks played a given year, it's marked N/A.</p>
+      </div>
+      <div class="faq-item">
+        <h4>What do the chips mean?</h4>
+        <p><b>Green</b> chips = one of the 4 scores that counted for you. <b>Gray</b> = played but was one of the 2 dropped scores. <b>Red dashed</b> = missed cut or WD (score was treated as a penalty). <b>"—"</b> = didn't play that year at all (DNP).</p>
+      </div>
+      <div class="faq-item">
+        <h4>Why the summary line?</h4>
+        <p>Shows your team's historical average best-4 across qualifying years, plus the year-level best/worst. Use it as a sanity check on presets — e.g. LIV All-Stars has the single best backtest year (2020, −44) but is wildly inconsistent.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Why does the optimal pick often trail Past Champions historically?</h4>
+        <p>Because the optimal pick is forward-looking — it's betting on 2026 form, Vegas odds, and current skill. "Past Champions" has survivorship bias baked in: it's picking players we already know performed at Augusta. The model doesn't get to cheat with hindsight.</p>
+      </div>
+    </div>
+
+    <div class="faq-section-title">Model Parameters</div>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <h4>Skill scale</h4>
+        <p>Controls how much better the favorites are than the field. Higher values spread out projected scores — Scheffler gets lower, longshots get higher. Default 2.0 reproduces the book's win distribution.</p>
+      </div>
+      <div class="faq-item">
+        <h4>σ (per-round noise)</h4>
+        <p>How much a single player's score bounces around their mean. Default 4.5 strokes matches historical PGA Tour variance at majors. Bumping it up makes the tournament more random and helps longshots.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Missed-cut penalty</h4>
+        <p>The score assigned when a sim says a player missed the cut. Default 310 (≈ +22) is deliberately brutal — a player who misses the cut is effectively unusable in best-4 because you're relying on their teammates to absorb the loss.</p>
+      </div>
+      <div class="faq-item">
+        <h4>Number of sims</h4>
+        <p>10,000 Monte Carlo iterations per refresh. Standard error on the expected total is roughly σ/√10000 ≈ 0.1 strokes, so the headline number is precise to about a tenth.</p>
+      </div>
+    </div>
+
+    <div class="explain" style="margin-top:16px;">
+      <b>TL;DR —</b> Pick 6 players. The 4 lowest scores count. The tool tells you (a) what the model expects you to shoot, (b) how that team would've done in prior Masters, and (c) how your choice compares to the mathematically optimal pick. Lower numbers win.
+    </div>
+  </div>
+</div>
+
+<div class="footer-note">
+  Built <span id="buildDate"></span> · Odds de-vigged from ESPN/DraftKings 2026 Masters market · Monte Carlo runs 10k iterations per refresh · All math client-side
+</div>
+
+<script>
+/* =========================================================================
+   Data (embedded)
+   ========================================================================= */
+const DATA = {"players":[{"name":"Scottie Scheffler","winOdds":510,"mcOdds":-1400,"winP":0.11785,"mcP":0.9333,"mean":289.78,"sd":7.0},{"name":"Jon Rahm","winOdds":900,"mcOdds":-1000,"winP":0.07189,"mcP":0.9091,"mean":291.16,"sd":7.45},{"name":"Bryson DeChambeau","winOdds":1050,"mcOdds":-750,"winP":0.06251,"mcP":0.8824,"mean":291.94,"sd":7.96},{"name":"Rory McIlroy","winOdds":1175,"mcOdds":-750,"winP":0.05638,"mcP":0.8824,"mean":292.11,"sd":7.84},{"name":"Ludvig Aberg","winOdds":1650,"mcOdds":-525,"winP":0.04108,"mcP":0.84,"mean":293.54,"sd":8.41},{"name":"Xander Schauffele","winOdds":1750,"mcOdds":-700,"winP":0.03886,"mcP":0.875,"mean":292.99,"sd":7.83},{"name":"Cameron Young","winOdds":2200,"mcOdds":-490,"winP":0.03126,"mcP":0.8305,"mean":294.22,"sd":8.42},{"name":"Tommy Fleetwood","winOdds":2250,"mcOdds":-600,"winP":0.03059,"mcP":0.8571,"mean":293.74,"sd":7.96},{"name":"Matt Fitzpatrick","winOdds":2300,"mcOdds":-550,"winP":0.02995,"mcP":0.8462,"mean":293.94,"sd":8.13},{"name":"Hideki Matsuyama","winOdds":2700,"mcOdds":-490,"winP":0.02567,"mcP":0.8305,"mean":294.4,"sd":8.29},{"name":"Collin Morikawa","winOdds":3100,"mcOdds":-450,"winP":0.02247,"mcP":0.8182,"mean":294.99,"sd":8.42},{"name":"Min Woo Lee","winOdds":3300,"mcOdds":-410,"winP":0.02114,"mcP":0.8039,"mean":295.36,"sd":8.53},{"name":"Robert MacIntyre","winOdds":3500,"mcOdds":-400,"winP":0.01997,"mcP":0.8,"mean":295.58,"sd":8.55},{"name":"Justin Rose","winOdds":3500,"mcOdds":-340,"winP":0.01997,"mcP":0.7727,"mean":296.0,"sd":8.84},{"name":"Brooks Koepka","winOdds":3700,"mcOdds":-320,"winP":0.01892,"mcP":0.7619,"mean":296.21,"sd":8.76},{"name":"Jordan Spieth","winOdds":4200,"mcOdds":-350,"winP":0.01672,"mcP":0.7778,"mean":296.17,"sd":8.58},{"name":"Patrick Reed","winOdds":4200,"mcOdds":-340,"winP":0.01672,"mcP":0.7727,"mean":296.36,"sd":8.67},{"name":"Chris Gotterup","winOdds":4300,"mcOdds":-320,"winP":0.01634,"mcP":0.7619,"mean":296.52,"sd":8.75},{"name":"Viktor Hovland","winOdds":4500,"mcOdds":-310,"winP":0.01563,"mcP":0.7561,"mean":296.65,"sd":8.74},{"name":"Si Woo Kim","winOdds":5000,"mcOdds":-370,"winP":0.0141,"mcP":0.7872,"mean":296.27,"sd":8.43},{"name":"Akshay Bhatia","winOdds":5100,"mcOdds":-310,"winP":0.01382,"mcP":0.7561,"mean":296.81,"sd":8.6},{"name":"Russell Henley","winOdds":5400,"mcOdds":-390,"winP":0.01307,"mcP":0.7959,"mean":296.19,"sd":8.27},{"name":"Justin Thomas","winOdds":5900,"mcOdds":-265,"winP":0.01198,"mcP":0.726,"mean":297.63,"sd":8.85},{"name":"Adam Scott","winOdds":6000,"mcOdds":-300,"winP":0.01179,"mcP":0.75,"mean":297.21,"sd":8.62},{"name":"Patrick Cantlay","winOdds":6400,"mcOdds":-300,"winP":0.01106,"mcP":0.75,"mean":297.25,"sd":8.52},{"name":"Jake Knapp","winOdds":6400,"mcOdds":-265,"winP":0.01106,"mcP":0.726,"mean":297.68,"sd":8.73},{"name":"Shane Lowry","winOdds":6600,"mcOdds":-310,"winP":0.01073,"mcP":0.7561,"mean":297.28,"sd":8.5},{"name":"Jason Day","winOdds":6800,"mcOdds":-300,"winP":0.01042,"mcP":0.75,"mean":297.35,"sd":8.51},{"name":"J.J. Spaun","winOdds":6800,"mcOdds":-260,"winP":0.01042,"mcP":0.7222,"mean":297.79,"sd":8.69},{"name":"Sam Burns","winOdds":7000,"mcOdds":-270,"winP":0.01013,"mcP":0.7297,"mean":297.72,"sd":8.63},{"name":"Nicolai Hojgaard","winOdds":7400,"mcOdds":-265,"winP":0.00959,"mcP":0.726,"mean":297.94,"sd":8.69},{"name":"Sepp Straka","winOdds":7600,"mcOdds":-265,"winP":0.00934,"mcP":0.726,"mean":297.91,"sd":8.57},{"name":"Maverick McNealy","winOdds":7800,"mcOdds":-265,"winP":0.0091,"mcP":0.726,"mean":298.03,"sd":8.6},{"name":"Tyrrell Hatton","winOdds":8000,"mcOdds":-255,"winP":0.00888,"mcP":0.7183,"mean":298.12,"sd":8.6},{"name":"Corey Conners","winOdds":8400,"mcOdds":-260,"winP":0.00846,"mcP":0.7222,"mean":298.23,"sd":8.6},{"name":"Jacob Bridgeman","winOdds":8400,"mcOdds":-260,"winP":0.00846,"mcP":0.7222,"mean":298.1,"sd":8.58},{"name":"Harris English","winOdds":10000,"mcOdds":-240,"winP":0.00712,"mcP":0.7059,"mean":298.59,"sd":8.47},{"name":"Kurt Kitayama","winOdds":10000,"mcOdds":-255,"winP":0.00712,"mcP":0.7183,"mean":298.44,"sd":8.42},{"name":"Ben Griffin","winOdds":11000,"mcOdds":-235,"winP":0.00648,"mcP":0.7015,"mean":298.83,"sd":8.44},{"name":"Cameron Smith","winOdds":11000,"mcOdds":-210,"winP":0.00648,"mcP":0.6774,"mean":299.19,"sd":8.58},{"name":"Daniel Berger","winOdds":12000,"mcOdds":-225,"winP":0.00594,"mcP":0.6923,"mean":299.12,"sd":8.45},{"name":"Gary Woodland","winOdds":12000,"mcOdds":-205,"winP":0.00594,"mcP":0.6721,"mean":299.35,"sd":8.53},{"name":"Max Homa","winOdds":12000,"mcOdds":-194,"winP":0.00594,"mcP":0.6599,"mean":299.59,"sd":8.62},{"name":"Rasmus Hojgaard","winOdds":13000,"mcOdds":-205,"winP":0.00549,"mcP":0.6721,"mean":299.56,"sd":8.47},{"name":"Keegan Bradley","winOdds":14000,"mcOdds":-200,"winP":0.0051,"mcP":0.6667,"mean":299.61,"sd":8.4},{"name":"Marco Penge","winOdds":14000,"mcOdds":-178,"winP":0.0051,"mcP":0.6403,"mean":300.2,"sd":8.57},{"name":"Harry Hall","winOdds":15000,"mcOdds":-194,"winP":0.00476,"mcP":0.6599,"mean":299.88,"sd":8.43},{"name":"Ryan Gerard","winOdds":15500,"mcOdds":-200,"winP":0.00461,"mcP":0.6667,"mean":299.93,"sd":8.41},{"name":"Alex Noren","winOdds":16000,"mcOdds":-196,"winP":0.00447,"mcP":0.6622,"mean":299.96,"sd":8.41},{"name":"Nick Taylor","winOdds":19000,"mcOdds":-190,"winP":0.00376,"mcP":0.6552,"mean":300.32,"sd":8.29},{"name":"Ryan Fox","winOdds":20000,"mcOdds":-168,"winP":0.00358,"mcP":0.6269,"mean":300.73,"sd":8.32},{"name":"Wyndham Clark","winOdds":20000,"mcOdds":-146,"winP":0.00358,"mcP":0.5935,"mean":301.39,"sd":8.4},{"name":"Brian Harman","winOdds":21000,"mcOdds":-170,"winP":0.00341,"mcP":0.6296,"mean":300.8,"sd":8.29},{"name":"Michael Kim","winOdds":21000,"mcOdds":-166,"winP":0.00341,"mcP":0.6241,"mean":300.93,"sd":8.26},{"name":"Max Greyserman","winOdds":21000,"mcOdds":-160,"winP":0.00341,"mcP":0.6154,"mean":300.97,"sd":8.35},{"name":"Kristoffer Reitan","winOdds":22000,"mcOdds":-160,"winP":0.00325,"mcP":0.6154,"mean":301.03,"sd":8.28},{"name":"Casey Jarvis","winOdds":23000,"mcOdds":-162,"winP":0.00311,"mcP":0.6183,"mean":301.04,"sd":8.26},{"name":"Carlos Ortiz","winOdds":23000,"mcOdds":-158,"winP":0.00311,"mcP":0.6124,"mean":301.15,"sd":8.21},{"name":"Aaron Rai","winOdds":25000,"mcOdds":-158,"winP":0.00286,"mcP":0.6124,"mean":301.31,"sd":8.18},{"name":"Sergio Garcia","winOdds":25000,"mcOdds":-154,"winP":0.00286,"mcP":0.6063,"mean":301.33,"sd":8.18},{"name":"Dustin Johnson","winOdds":25000,"mcOdds":-150,"winP":0.00286,"mcP":0.6,"mean":301.33,"sd":8.2},{"name":"Haotong Li","winOdds":27000,"mcOdds":-152,"winP":0.00265,"mcP":0.6032,"mean":301.43,"sd":8.16},{"name":"Matt McCarty","winOdds":28000,"mcOdds":-154,"winP":0.00256,"mcP":0.6063,"mean":301.52,"sd":8.09},{"name":"Tom McKibbin","winOdds":29000,"mcOdds":-152,"winP":0.00247,"mcP":0.6032,"mean":301.55,"sd":8.07},{"name":"Andrew Novak","winOdds":29000,"mcOdds":-150,"winP":0.00247,"mcP":0.6,"mean":301.67,"sd":8.15},{"name":"Rasmus Neergaard-Petersen","winOdds":31000,"mcOdds":-142,"winP":0.00231,"mcP":0.5868,"mean":301.9,"sd":8.06},{"name":"Nico Echavarria","winOdds":32500,"mcOdds":-142,"winP":0.00221,"mcP":0.5868,"mean":301.96,"sd":8.05},{"name":"Sami Valimaki","winOdds":36000,"mcOdds":-140,"winP":0.00199,"mcP":0.5833,"mean":302.11,"sd":7.96},{"name":"Johnny Keefer","winOdds":36000,"mcOdds":-132,"winP":0.00199,"mcP":0.569,"mean":302.32,"sd":7.93},{"name":"Aldrich Potgieter","winOdds":36000,"mcOdds":-124,"winP":0.00199,"mcP":0.5536,"mean":302.47,"sd":7.91},{"name":"Michael Brennan","winOdds":39000,"mcOdds":-122,"winP":0.00184,"mcP":0.5495,"mean":302.69,"sd":7.92},{"name":"Zach Johnson","winOdds":52500,"mcOdds":-128,"winP":0.00137,"mcP":0.5614,"mean":302.76,"sd":7.71},{"name":"Bubba Watson","winOdds":52500,"mcOdds":-116,"winP":0.00137,"mcP":0.537,"mean":303.22,"sd":7.68},{"name":"Charl Schwartzel","winOdds":62500,"mcOdds":-116,"winP":0.00115,"mcP":0.537,"mean":303.34,"sd":7.5},{"name":"Davis Riley","winOdds":82500,"mcOdds":110,"winP":0.00087,"mcP":0.4762,"mean":304.36,"sd":7.28},{"name":"Mason Howell","winOdds":200000,"mcOdds":152,"winP":0.00036,"mcP":0.3968,"mean":305.96,"sd":6.54},{"name":"Danny Willett","winOdds":225000,"mcOdds":146,"winP":0.00032,"mcP":0.4065,"mean":306.04,"sd":6.41},{"name":"Angel Cabrera","winOdds":300000,"mcOdds":186,"winP":0.00024,"mcP":0.3497,"mean":306.77,"sd":6.09},{"name":"Brian Campbell","winOdds":325000,"mcOdds":158,"winP":0.00022,"mcP":0.3876,"mean":306.48,"sd":6.1},{"name":"Ethan Fang","winOdds":325000,"mcOdds":182,"winP":0.00022,"mcP":0.3546,"mean":306.77,"sd":6.01},{"name":"Pongsapek Laopakdee","winOdds":350000,"mcOdds":200,"winP":0.00021,"mcP":0.3333,"mean":306.99,"sd":6.0},{"name":"Naoyuki Kataoka","winOdds":450000,"mcOdds":196,"winP":0.00016,"mcP":0.3378,"mean":307.14,"sd":5.82},{"name":"Brandon Holtz","winOdds":500000,"mcOdds":270,"winP":0.00014,"mcP":0.2703,"mean":307.79,"sd":5.54},{"name":"Vijay Singh","winOdds":500000,"mcOdds":260,"winP":0.00014,"mcP":0.2778,"mean":307.65,"sd":5.56},{"name":"Fred Couples","winOdds":500000,"mcOdds":270,"winP":0.00014,"mcP":0.2703,"mean":307.76,"sd":5.54},{"name":"Jackson Herrington","winOdds":500000,"mcOdds":280,"winP":0.00014,"mcP":0.2632,"mean":307.77,"sd":5.49},{"name":"Mike Weir","winOdds":500000,"mcOdds":300,"winP":0.00014,"mcP":0.25,"mean":307.92,"sd":5.48},{"name":"Mateo Pulcini","winOdds":500000,"mcOdds":315,"winP":0.00014,"mcP":0.241,"mean":308.07,"sd":5.46},{"name":"Jose Maria Olazabal","winOdds":500000,"mcOdds":345,"winP":0.00014,"mcP":0.2247,"mean":308.18,"sd":5.37}],"params":{"scale":2.0,"sigma":4.5,"fieldMean":293,"mcPenalty":310,"mcSD":4},"optimal":{"players":["Scottie Scheffler","Jon Rahm","Bryson DeChambeau","Rory McIlroy","Xander Schauffele","Ludvig Aberg"],"expected":1152.654634912035}};
+
+const HIST = {"years":[2019,2020,2021,2022,2023,2024,2025],"players":{"Scottie Scheffler":{"2019":"DNP","2020":282,"2021":287,"2022":278,"2023":284,"2024":277,"2025":280},"Jon Rahm":{"2019":278,"2020":278,"2021":282,"2022":292,"2023":276,"2024":297,"2025":285},"Bryson DeChambeau":{"2019":284,"2020":286,"2021":293,"2022":"MC","2023":"MC","2024":286,"2025":281},"Rory McIlroy":{"2019":283,"2020":277,"2021":"MC","2022":281,"2023":"MC","2024":292,"2025":277},"Ludvig Aberg":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":281,"2025":282},"Xander Schauffele":{"2019":276,"2020":281,"2021":281,"2022":"MC","2023":284,"2024":287,"2025":283},"Cameron Young":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"MC","2023":282,"2024":288,"2025":"DNP"},"Tommy Fleetwood":{"2019":286,"2020":282,"2021":293,"2022":290,"2023":291,"2024":284,"2025":286},"Matt Fitzpatrick":{"2019":283,"2020":289,"2021":290,"2022":290,"2023":284,"2024":292,"2025":291},"Hideki Matsuyama":{"2019":285,"2020":280,"2021":278,"2022":290,"2023":286,"2024":295,"2025":286},"Collin Morikawa":{"2019":"DNP","2020":288,"2021":287,"2022":284,"2023":284,"2024":284,"2025":285},"Min Woo Lee":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":290,"2023":"MC","2024":292,"2025":294},"Robert MacIntyre":{"2019":"DNP","2020":"DNP","2021":286,"2022":291,"2023":"DNP","2024":"DNP","2025":"DNP"},"Justin Rose":{"2019":"MC","2020":283,"2021":283,"2022":"MC","2023":286,"2024":"MC","2025":277},"Brooks Koepka":{"2019":276,"2020":278,"2021":"MC","2022":"MC","2023":280,"2024":297,"2025":"MC"},"Jordan Spieth":{"2019":283,"2020":289,"2021":281,"2022":"MC","2023":281,"2024":"MC","2025":285},"Patrick Reed":{"2019":286,"2020":279,"2021":284,"2022":294,"2023":281,"2024":289,"2025":279},"Chris Gotterup":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Viktor Hovland":{"2019":285,"2020":"DNP","2021":288,"2022":292,"2023":282,"2024":"MC","2025":286},"Si Woo Kim":{"2019":283,"2020":286,"2021":286,"2022":295,"2023":289,"2024":293,"2025":"DNP"},"Akshay Bhatia":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":294,"2025":292},"Russell Henley":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":293,"2023":281,"2024":295,"2025":"MC"},"Justin Thomas":{"2019":280,"2020":276,"2021":288,"2022":287,"2023":"MC","2024":"MC","2025":290},"Adam Scott":{"2019":282,"2020":286,"2021":299,"2022":302,"2023":293,"2024":292,"2025":"MC"},"Patrick Cantlay":{"2019":278,"2020":281,"2021":"MC","2022":295,"2023":285,"2024":292,"2025":290},"Jake Knapp":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":301,"2025":"DNP"},"Shane Lowry":{"2019":"MC","2020":284,"2021":288,"2022":283,"2023":286,"2024":296,"2025":292},"Jason Day":{"2019":277,"2020":"MC","2021":"MC","2022":"DNP","2023":293,"2024":293,"2025":283},"J.J. Spaun":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":291,"2023":"DNP","2024":"DNP","2025":295},"Sam Burns":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"MC","2023":289,"2024":"MC","2025":293},"Nicolai Hojgaard":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Sepp Straka":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":293,"2023":295,"2024":290,"2025":"MC"},"Maverick McNealy":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":289},"Tyrrell Hatton":{"2019":292,"2020":"MC","2021":287,"2022":305,"2023":292,"2024":288,"2025":285},"Corey Conners":{"2019":288,"2020":279,"2021":284,"2022":285,"2023":"MC","2024":295,"2025":283},"Jacob Bridgeman":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Harris English":{"2019":"DNP","2020":"DNP","2021":288,"2022":"DNP","2023":294,"2024":292,"2025":284},"Kurt Kitayama":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"MC","2024":294,"2025":"DNP"},"Ben Griffin":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Cameron Smith":{"2019":290,"2020":273,"2021":285,"2022":283,"2023":292,"2024":286,"2025":"MC"},"Daniel Berger":{"2019":"DNP","2020":"DNP","2021":"MC","2022":303,"2023":"DNP","2024":"DNP","2025":286},"Gary Woodland":{"2019":285,"2020":"DNP","2021":292,"2022":"MC","2023":285,"2024":"MC","2025":"DNP"},"Max Homa":{"2019":"DNP","2020":"MC","2021":"MC","2022":302,"2023":294,"2024":284,"2025":284},"Rasmus Hojgaard":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Keegan Bradley":{"2019":287,"2020":"DNP","2021":"DNP","2022":"DNP","2023":287,"2024":292,"2025":"MC"},"Marco Penge":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Harry Hall":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Ryan Gerard":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Alex Noren":{"2019":296,"2020":"DNP","2021":"DNP","2022":"DNP","2023":"MC","2024":"DNP","2025":"DNP"},"Nick Taylor":{"2019":"DNP","2020":285,"2021":"DNP","2022":"DNP","2023":"DNP","2024":"MC","2025":291},"Ryan Fox":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":288,"2024":295,"2025":"DNP"},"Wyndham Clark":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"MC","2025":293},"Brian Harman":{"2019":"DNP","2020":"DNP","2021":286,"2022":"MC","2023":"MC","2024":"MC","2025":290},"Michael Kim":{"2019":"MC","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":287},"Max Greyserman":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":289},"Kristoffer Reitan":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Casey Jarvis":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Carlos Ortiz":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Aaron Rai":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":287},"Sergio Garcia":{"2019":"MC","2020":"DNP","2021":"MC","2022":291,"2023":"MC","2024":"MC","2025":"MC"},"Dustin Johnson":{"2019":276,"2020":268,"2021":"MC","2022":289,"2023":296,"2024":"MC","2025":"MC"},"Haotong Li":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Matt McCarty":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":285},"Tom McKibbin":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Andrew Novak":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Rasmus Neergaard-Petersen":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Nico Echavarria":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":296},"Sami Valimaki":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Johnny Keefer":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Aldrich Potgieter":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"MC","2024":"DNP","2025":"DNP"},"Michael Brennan":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Zach Johnson":{"2019":293,"2020":290,"2021":"MC","2022":"MC","2023":292,"2024":"MC","2025":283},"Bubba Watson":{"2019":280,"2020":292,"2021":289,"2022":295,"2023":"MC","2024":"MC","2025":285},"Charl Schwartzel":{"2019":"MC","2020":284,"2021":289,"2022":288,"2023":297,"2024":"MC","2025":290},"Davis Riley":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":286},"Mason Howell":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Danny Willett":{"2019":"MC","2020":284,"2021":"MC","2022":289,"2023":"MC","2024":297,"2025":292},"Angel Cabrera":{"2019":"MC","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Brian Campbell":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":289},"Ethan Fang":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Pongsapek Laopakdee":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Naoyuki Kataoka":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Brandon Holtz":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Vijay Singh":{"2019":"MC","2020":"DNP","2021":"MC","2022":"MC","2023":"MC","2024":302,"2025":"DNP"},"Fred Couples":{"2019":"MC","2020":"DNP","2021":"MC","2022":"MC","2023":297,"2024":"MC","2025":"MC"},"Jackson Herrington":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Mike Weir":{"2019":"MC","2020":290,"2021":"MC","2022":"MC","2023":"MC","2024":"MC","2025":"MC"},"Mateo Pulcini":{"2019":"DNP","2020":"DNP","2021":"DNP","2022":"DNP","2023":"DNP","2024":"DNP","2025":"DNP"},"Jose Maria Olazabal":{"2019":"MC","2020":"MC","2021":296,"2022":"MC","2023":"MC","2024":297,"2025":"DNP"}},"par":288,"maxScorePerYear":{"2019":296,"2020":292,"2021":299,"2022":305,"2023":297,"2024":302,"2025":296}};
+
+/* =========================================================================
+   Preset combos
+   ========================================================================= */
+/* Per-player attributes for Augusta-specific adjustments.
+   Fields: a=age, t=tour (P|L|I), b=bomber (long+accurate enough to attack par-5s),
+   s=ballStriker (elite iron play / shape-shaper), g=SG:APP trend (-2..+2, +=hot last 12wk),
+   f=Augusta course-fit delta in strokes (-=helps, +=hurts; ±1.5 range, reflects horses-for-courses signal). */
+const ATTRS = {
+"Scottie Scheffler":{a:29,t:"P",b:0,s:1,g:2.0,f:-0.9},
+"Jon Rahm":{a:31,t:"L",b:1,s:1,g:1.2,f:-0.8},
+"Bryson DeChambeau":{a:32,t:"L",b:1,s:0,g:1.4,f:-0.5},
+"Rory McIlroy":{a:36,t:"P",b:1,s:1,g:0.8,f:-0.3},
+"Ludvig Aberg":{a:26,t:"P",b:1,s:1,g:1.1,f:-0.2},
+"Xander Schauffele":{a:32,t:"P",b:0,s:1,g:0.6,f:-0.2},
+"Cameron Young":{a:28,t:"P",b:1,s:0,g:0.3,f:0.0},
+"Tommy Fleetwood":{a:35,t:"P",b:0,s:1,g:1.0,f:-0.3},
+"Matt Fitzpatrick":{a:31,t:"P",b:0,s:1,g:-0.4,f:-0.4},
+"Hideki Matsuyama":{a:34,t:"P",b:0,s:1,g:0.5,f:-1.0},
+"Collin Morikawa":{a:29,t:"P",b:0,s:1,g:1.3,f:-0.4},
+"Min Woo Lee":{a:27,t:"P",b:1,s:0,g:0.2,f:0.0},
+"Robert MacIntyre":{a:29,t:"P",b:0,s:0,g:0.1,f:0.3},
+"Justin Rose":{a:45,t:"P",b:0,s:1,g:0.8,f:-1.2},
+"Brooks Koepka":{a:35,t:"L",b:1,s:0,g:-0.8,f:-0.2},
+"Jordan Spieth":{a:32,t:"P",b:0,s:0,g:-0.2,f:-1.3},
+"Patrick Reed":{a:35,t:"L",b:0,s:0,g:-0.3,f:-0.7},
+"Chris Gotterup":{a:26,t:"P",b:1,s:0,g:0.9,f:0.8},
+"Viktor Hovland":{a:28,t:"P",b:0,s:1,g:-0.5,f:0.1},
+"Si Woo Kim":{a:30,t:"P",b:0,s:0,g:0.0,f:-0.2},
+"Akshay Bhatia":{a:24,t:"P",b:0,s:0,g:0.3,f:0.4},
+"Russell Henley":{a:36,t:"P",b:0,s:1,g:0.7,f:0.0},
+"Justin Thomas":{a:32,t:"P",b:1,s:0,g:-0.3,f:-0.3},
+"Adam Scott":{a:45,t:"P",b:1,s:1,g:-0.2,f:-0.7},
+"Patrick Cantlay":{a:34,t:"P",b:0,s:1,g:-0.4,f:-0.3},
+"Jake Knapp":{a:31,t:"P",b:1,s:0,g:0.2,f:0.5},
+"Shane Lowry":{a:38,t:"P",b:0,s:0,g:0.3,f:-0.2},
+"Jason Day":{a:38,t:"P",b:0,s:0,g:-0.6,f:-0.3},
+"J.J. Spaun":{a:35,t:"P",b:0,s:0,g:1.1,f:0.3},
+"Sam Burns":{a:29,t:"P",b:0,s:0,g:-0.5,f:0.3},
+"Nicolai Hojgaard":{a:24,t:"I",b:1,s:0,g:-0.2,f:0.7},
+"Sepp Straka":{a:32,t:"P",b:0,s:1,g:0.6,f:0.1},
+"Maverick McNealy":{a:30,t:"P",b:0,s:0,g:0.4,f:0.6},
+"Tyrrell Hatton":{a:34,t:"L",b:0,s:0,g:-0.4,f:0.1},
+"Corey Conners":{a:34,t:"P",b:0,s:1,g:0.3,f:-0.4},
+"Jacob Bridgeman":{a:25,t:"P",b:0,s:0,g:0.8,f:0.8},
+"Harris English":{a:36,t:"P",b:0,s:0,g:0.5,f:0.0},
+"Kurt Kitayama":{a:32,t:"P",b:0,s:0,g:-0.1,f:0.4},
+"Ben Griffin":{a:29,t:"P",b:0,s:0,g:1.0,f:0.8},
+"Cameron Smith":{a:32,t:"L",b:0,s:0,g:-0.3,f:-0.6},
+"Daniel Berger":{a:32,t:"P",b:0,s:0,g:-0.3,f:0.3},
+"Gary Woodland":{a:41,t:"P",b:1,s:0,g:-0.5,f:0.2},
+"Max Homa":{a:35,t:"P",b:0,s:0,g:-1.0,f:0.1},
+"Rasmus Hojgaard":{a:24,t:"I",b:0,s:0,g:0.0,f:0.7},
+"Keegan Bradley":{a:39,t:"P",b:0,s:0,g:0.4,f:0.3},
+"Marco Penge":{a:26,t:"I",b:0,s:0,g:0.6,f:0.8},
+"Harry Hall":{a:27,t:"P",b:0,s:0,g:0.2,f:0.8},
+"Ryan Gerard":{a:26,t:"P",b:0,s:0,g:0.3,f:0.8},
+"Alex Noren":{a:43,t:"P",b:0,s:1,g:0.1,f:0.4},
+"Nick Taylor":{a:37,t:"P",b:0,s:0,g:-0.3,f:0.2},
+"Ryan Fox":{a:38,t:"I",b:1,s:0,g:0.2,f:0.3},
+"Wyndham Clark":{a:32,t:"P",b:1,s:0,g:-0.9,f:0.3},
+"Brian Harman":{a:39,t:"P",b:0,s:0,g:-0.2,f:0.4},
+"Michael Kim":{a:32,t:"P",b:0,s:0,g:0.7,f:0.3},
+"Max Greyserman":{a:30,t:"P",b:1,s:0,g:0.4,f:0.5},
+"Kristoffer Reitan":{a:27,t:"I",b:0,s:0,g:0.2,f:0.8},
+"Casey Jarvis":{a:22,t:"I",b:0,s:0,g:0.0,f:0.9},
+"Carlos Ortiz":{a:34,t:"L",b:0,s:0,g:-0.2,f:0.3},
+"Aaron Rai":{a:31,t:"P",b:0,s:0,g:0.4,f:0.4},
+"Sergio Garcia":{a:46,t:"L",b:0,s:1,g:-0.2,f:-1.0},
+"Dustin Johnson":{a:41,t:"L",b:1,s:0,g:-0.8,f:-1.1},
+"Haotong Li":{a:30,t:"I",b:0,s:0,g:-0.4,f:0.5},
+"Matt McCarty":{a:27,t:"P",b:0,s:0,g:0.2,f:0.4},
+"Tom McKibbin":{a:23,t:"L",b:0,s:0,g:0.1,f:0.8},
+"Andrew Novak":{a:32,t:"P",b:0,s:0,g:0.3,f:0.8},
+"Rasmus Neergaard-Petersen":{a:27,t:"I",b:0,s:0,g:0.1,f:0.8},
+"Nico Echavarria":{a:31,t:"P",b:0,s:0,g:-0.2,f:0.5},
+"Sami Valimaki":{a:27,t:"I",b:0,s:0,g:0.0,f:0.8},
+"Johnny Keefer":{a:24,t:"P",b:0,s:0,g:0.0,f:0.8},
+"Aldrich Potgieter":{a:21,t:"I",b:1,s:0,g:0.2,f:1.0},
+"Michael Brennan":{a:22,t:"P",b:0,s:0,g:0.3,f:1.0},
+"Zach Johnson":{a:50,t:"P",b:0,s:0,g:-0.8,f:-0.5},
+"Bubba Watson":{a:47,t:"L",b:1,s:0,g:-1.0,f:-0.4},
+"Charl Schwartzel":{a:41,t:"L",b:0,s:0,g:-0.6,f:-0.3},
+"Davis Riley":{a:29,t:"P",b:0,s:0,g:-0.5,f:0.5},
+"Mason Howell":{a:19,t:"I",b:0,s:0,g:0.0,f:1.2},
+"Danny Willett":{a:38,t:"L",b:0,s:0,g:-0.5,f:-0.2},
+"Angel Cabrera":{a:56,t:"I",b:0,s:0,g:-1.0,f:-0.1},
+"Brian Campbell":{a:32,t:"P",b:0,s:0,g:0.4,f:0.6},
+"Ethan Fang":{a:21,t:"I",b:0,s:0,g:0.0,f:1.2},
+"Pongsapek Laopakdee":{a:25,t:"I",b:0,s:0,g:-0.2,f:1.2},
+"Naoyuki Kataoka":{a:32,t:"I",b:0,s:0,g:-0.2,f:1.0},
+"Brandon Holtz":{a:23,t:"P",b:0,s:0,g:0.0,f:1.0},
+"Vijay Singh":{a:62,t:"I",b:0,s:0,g:-1.2,f:0.3},
+"Fred Couples":{a:66,t:"P",b:0,s:0,g:-1.0,f:-1.0},
+"Jackson Herrington":{a:24,t:"P",b:0,s:0,g:0.0,f:1.0},
+"Mike Weir":{a:55,t:"P",b:0,s:0,g:-1.0,f:0.1},
+"Mateo Pulcini":{a:22,t:"I",b:0,s:0,g:0.0,f:1.2},
+"Jose Maria Olazabal":{a:60,t:"I",b:0,s:0,g:-1.2,f:0.2}
+};
+const ATTR_DEFAULT = {a:30,t:"P",b:0,s:0,g:0,f:0};
+function getAttr(name) { return ATTRS[name] || ATTR_DEFAULT; }
+
+/* ISO 3166-1 alpha-2 country codes per player. GB-NIR, GB-SCT, GB-ENG all roll up to GB. */
+const COUNTRIES = {
+"Scottie Scheffler":"US","Jon Rahm":"ES","Bryson DeChambeau":"US","Rory McIlroy":"GB",
+"Ludvig Aberg":"SE","Xander Schauffele":"US","Cameron Young":"US","Tommy Fleetwood":"GB",
+"Matt Fitzpatrick":"GB","Hideki Matsuyama":"JP","Collin Morikawa":"US","Min Woo Lee":"AU",
+"Robert MacIntyre":"GB","Justin Rose":"GB","Brooks Koepka":"US","Jordan Spieth":"US",
+"Patrick Reed":"US","Chris Gotterup":"US","Viktor Hovland":"NO","Si Woo Kim":"KR",
+"Akshay Bhatia":"US","Russell Henley":"US","Justin Thomas":"US","Adam Scott":"AU",
+"Patrick Cantlay":"US","Jake Knapp":"US","Shane Lowry":"IE","Jason Day":"AU",
+"J.J. Spaun":"US","Sam Burns":"US","Nicolai Hojgaard":"DK","Sepp Straka":"AT",
+"Maverick McNealy":"US","Tyrrell Hatton":"GB","Corey Conners":"CA","Jacob Bridgeman":"US",
+"Harris English":"US","Kurt Kitayama":"US","Ben Griffin":"US","Cameron Smith":"AU",
+"Daniel Berger":"US","Gary Woodland":"US","Max Homa":"US","Rasmus Hojgaard":"DK",
+"Keegan Bradley":"US","Marco Penge":"GB","Harry Hall":"GB","Ryan Gerard":"US",
+"Alex Noren":"SE","Nick Taylor":"CA","Ryan Fox":"NZ","Wyndham Clark":"US",
+"Brian Harman":"US","Michael Kim":"US","Max Greyserman":"US","Kristoffer Reitan":"NO",
+"Casey Jarvis":"ZA","Carlos Ortiz":"MX","Aaron Rai":"GB","Sergio Garcia":"ES",
+"Dustin Johnson":"US","Haotong Li":"CN","Matt McCarty":"US","Tom McKibbin":"GB",
+"Andrew Novak":"US","Rasmus Neergaard-Petersen":"DK","Nico Echavarria":"CO","Sami Valimaki":"FI",
+"Johnny Keefer":"US","Aldrich Potgieter":"ZA","Michael Brennan":"US","Zach Johnson":"US",
+"Bubba Watson":"US","Charl Schwartzel":"ZA","Davis Riley":"US","Mason Howell":"US",
+"Danny Willett":"GB","Angel Cabrera":"AR","Brian Campbell":"US","Ethan Fang":"US",
+"Pongsapek Laopakdee":"TH","Naoyuki Kataoka":"JP","Brandon Holtz":"US","Vijay Singh":"FJ",
+"Fred Couples":"US","Jackson Herrington":"US","Mike Weir":"CA","Mateo Pulcini":"AR",
+"Jose Maria Olazabal":"ES"
+};
+function countryOf(name) { return COUNTRIES[name] || "US"; }
+function flagFor(code) {
+  // Convert 2-letter country code to regional-indicator flag emoji
+  if (!code || code.length !== 2) return "🏳️";
+  const A = 127397; // 0x1F1E6 - 'A'.charCodeAt(0)
+  return String.fromCodePoint(code.charCodeAt(0) + A, code.charCodeAt(1) + A);
+}
+const TOUR_LABEL = { P: "PGA", L: "LIV", I: "INT" };
+const TOUR_COLOR = { P: "#7ed490", L: "#e8a898", I: "#b0beb5" };
+
+const PRESETS = [
+  {
+    id: "optimal",
+    name: "🏆 Model Optimal",
+    desc: "Mathematically lowest expected total — six of Vegas's top seven favorites. Hurt historically because Åberg only first appeared in 2024 (5 DNPs in the backtest).",
+    players: ["Scottie Scheffler","Jon Rahm","Bryson DeChambeau","Rory McIlroy","Xander Schauffele","Ludvig Aberg"],
+  },
+  {
+    id: "champs",
+    name: "👑 Past Masters Champions",
+    desc: "Six green jackets: Scheffler (22,24), McIlroy (25), Rahm (23), Matsuyama (21), Spieth (15), Reed (18). Best historical 7-year average in the backtest — every pick has actually closed at Augusta.",
+    players: ["Scottie Scheffler","Rory McIlroy","Jon Rahm","Hideki Matsuyama","Jordan Spieth","Patrick Reed"],
+  },
+  {
+    id: "euro",
+    name: "🇪🇺 European Invasion",
+    desc: "Ryder Cup dream team: Rahm, McIlroy, Åberg, Fleetwood, Fitzpatrick, Rose. Rose just lost last year's playoff. Deep and steady.",
+    players: ["Jon Rahm","Rory McIlroy","Ludvig Aberg","Tommy Fleetwood","Matt Fitzpatrick","Justin Rose"],
+  },
+  {
+    id: "liv",
+    name: "💰 LIV All-Stars",
+    desc: "The defectors: DeChambeau, Koepka, Reed, Rahm, Cameron Smith, Sergio. Hit the lowest single-year backtest of any combo — 1108 (−44) in 2020 when DJ was leading the chase. Boom or bust.",
+    players: ["Bryson DeChambeau","Brooks Koepka","Patrick Reed","Jon Rahm","Cameron Smith","Sergio Garcia"],
+  },
+  {
+    id: "horses",
+    name: "🐎 Augusta Course Horses",
+    desc: "Reliable cut-makers, no stars: Matsuyama, Morikawa, Fleetwood, Fitzpatrick, Young, Hovland. Most consistent combo in the backtest — never worse than +2 vs par in 7 years. The safety pick.",
+    players: ["Hideki Matsuyama","Collin Morikawa","Tommy Fleetwood","Matt Fitzpatrick","Cameron Young","Viktor Hovland"],
+  },
+  {
+    id: "longshot",
+    name: "🎲 The Longshot Gamble",
+    desc: "Six triple-digit dogs. Can variance save you when the floor is this low? Backtest answer: no. Averages +20 vs par in the years enough of them even show up.",
+    players: ["Max Homa","Keegan Bradley","Ryan Fox","Wyndham Clark","Nick Taylor","Alex Noren"],
+  },
+];
+
+/* =========================================================================
+   Model & Monte Carlo
+   ========================================================================= */
+const N_SIMS = 10000;
+const FIELD_MEAN = 293;
+const MC_SD = 4;
+let scale = 2.0, sigma = 4.5, mcPenalty = 310;
+
+/* Augusta-specific adjustment state */
+let useCourseFit = true;   // apply per-player Augusta history ±strokes
+let useAgeCurve  = true;   // +0.3 for <24 or >42
+let useLivRust   = true;   // +0.4 for LIV players
+let weather      = "neutral"; // "neutral" | "soft" | "firm"
+let courseFitWeight = 1.0; // 0..1.5 slider for how hard course-fit bites
+
+/* Compute total mean adjustment for a player given current toggles */
+function playerAdjustment(name) {
+  const at = getAttr(name);
+  let delta = 0;
+  if (useCourseFit) delta += at.f * courseFitWeight;
+  if (useAgeCurve && (at.a < 24 || at.a > 42)) delta += 0.3;
+  if (useLivRust && at.t === "L") delta += 0.4;
+  if (weather === "soft") {
+    // soft/calm: bombers feast (-1.5), ball strikers lose a touch (+0.3), everyone else slight -0.1
+    if (at.b) delta += -1.5;
+    else if (at.s) delta += 0.3;
+    else delta += -0.1;
+  } else if (weather === "firm") {
+    // firm/windy: bombers cough it up (+0.8), ball strikers feast (-1.2), rest slight +0.2
+    if (at.b) delta += 0.8;
+    else if (at.s) delta += -1.2;
+    else delta += 0.2;
+  }
+  return delta;
+}
+
+// Box-Muller normal RNG
+function randn() {
+  let u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+}
+
+// Recompute each player's mean from current scale + Augusta adjustments
+function recomputeMeans() {
+  const N = DATA.players.length;
+  const p_unif = 1.0 / N;
+  for (const p of DATA.players) {
+    const base = FIELD_MEAN - scale * Math.log(p.winP / p_unif);
+    p.baseMean = base;
+    p.adjDelta = playerAdjustment(p.name);
+    p.liveMean = base + p.adjDelta;
+  }
+}
+recomputeMeans();
+
+/**
+ * Simulate a single player's 72-hole tournament score.
+ * With prob (1 - mcP) returns missed-cut penalty instead.
+ */
+function simScore(player) {
+  if (Math.random() < player.mcP) {
+    return player.liveMean + sigma * randn();
+  } else {
+    return mcPenalty + MC_SD * randn();
+  }
+}
+
+/**
+ * For a given 6-player selection, run n simulations and return the
+ * distribution of best-4-of-6 totals.
+ */
+function simulateSelection(players, n) {
+  if (players.length !== 6) return null;
+  const totals = new Float64Array(n);
+  const scores = new Float64Array(6);
+  for (let t = 0; t < n; t++) {
+    for (let i = 0; i < 6; i++) scores[i] = simScore(players[i]);
+    // sort ascending (small array, in-place)
+    // simple insertion sort for 6 elements
+    for (let i = 1; i < 6; i++) {
+      const v = scores[i]; let j = i;
+      while (j > 0 && scores[j-1] > v) { scores[j] = scores[j-1]; j--; }
+      scores[j] = v;
+    }
+    totals[t] = scores[0] + scores[1] + scores[2] + scores[3];
+  }
+  return totals;
+}
+
+function stats(arr) {
+  const n = arr.length;
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += arr[i];
+  const mean = sum / n;
+  let sq = 0;
+  for (let i = 0; i < n; i++) { const d = arr[i] - mean; sq += d*d; }
+  const sd = Math.sqrt(sq / (n - 1));
+  const sorted = Array.from(arr).sort((a,b) => a - b);
+  const pct = p => sorted[Math.min(n-1, Math.max(0, Math.floor(p * n)))];
+  return { mean, sd, p10: pct(0.10), p50: pct(0.50), p90: pct(0.90),
+           min: sorted[0], max: sorted[n-1] };
+}
+
+/* =========================================================================
+   UI State
+   ========================================================================= */
+let selectedNames = new Set();
+let sortKey = "mean";
+let sortDir = 1;        // 1 = ascending, -1 = descending
+let filterText = "";
+
+function sortedPlayers() {
+  const rows = DATA.players.map((p, idx) => {
+    const at = getAttr(p.name);
+    return {...p, origIdx: idx, sgApp: at.g, augFit: at.f, age: at.a, tour: at.t, country: countryOf(p.name)};
+  });
+  rows.sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    // For "hotter is better" fields, ascending = best-first
+    if (sortKey === "sgApp") { av = -a.sgApp; bv = -b.sgApp; }
+    if (sortKey === "winP") { av = -a.winP; bv = -b.winP; }
+    if (typeof av === "string") return sortDir * av.localeCompare(bv);
+    return sortDir * (av - bv);
+  });
+  return rows;
+}
+
+function sgChipHTML(g) {
+  let cls = "neu", val = g >= 0 ? "+" + g.toFixed(1) : g.toFixed(1);
+  if (g >= 1.0)  cls = "hot";
+  else if (g >= 0.3)  cls = "warm";
+  else if (g > -0.3)  cls = "neu";
+  else if (g > -1.0)  cls = "cool";
+  else                cls = "cold";
+  return `<span class="sg-chip ${cls}" title="SG:APP trend, last 12 weeks">${val}</span>`;
+}
+function fitChipHTML(f) {
+  if (Math.abs(f) < 0.05) return `<span class="fit-chip">0.0</span>`;
+  const cls = f < 0 ? "good" : "bad";
+  const s = f > 0 ? "+" + f.toFixed(1) : f.toFixed(1);
+  return `<span class="fit-chip ${cls}" title="Total Augusta adjustment vs base">${s}</span>`;
+}
+
+/* =========================================================================
+   Renderers
+   ========================================================================= */
+function fmt1(x) { return x.toFixed(1); }
+function fmt2(x) { return x.toFixed(2); }
+function fmtPct(x) { return (x * 100).toFixed(1) + "%"; }
+function fmtOdds(o) {
+  if (o > 0) return "+" + o.toLocaleString();
+  return o.toLocaleString();
+}
+
+function renderTable() {
+  recomputeMeans();
+  const body = document.getElementById("playerBody");
+  const rows = sortedPlayers().filter(p =>
+    !filterText || p.name.toLowerCase().includes(filterText));
+  const frag = document.createDocumentFragment();
+  let rank = 0;
+  for (const p of rows) {
+    rank++;
+    const tr = document.createElement("tr");
+    tr.className = "player-row" + (selectedNames.has(p.name) ? " selected" : "");
+    tr.dataset.name = p.name;
+    const at = getAttr(p.name);
+    const cc = countryOf(p.name);
+    tr.innerHTML = `
+      <td class="num">${rank}</td>
+      <td class="name"><span class="flag" title="${cc}">${flagFor(cc)}</span>${p.name}</td>
+      <td class="num">${at.a}</td>
+      <td><span class="tour-chip tour-${at.t}">${TOUR_LABEL[at.t]}</span></td>
+      <td class="num">${sgChipHTML(at.g)}</td>
+      <td class="num">${fmtOdds(p.winOdds)}</td>
+      <td class="num">${fmtPct(p.winP)}</td>
+      <td class="num">${(p.mcP*100).toFixed(0)}%</td>
+      <td class="num">${fmt1(p.liveMean)}</td>
+      <td class="num">${fitChipHTML(p.adjDelta)}</td>
+      <td class="num">${fmt1(p.sd)}</td>`;
+    tr.addEventListener("click", () => toggleSelect(p.name));
+    frag.appendChild(tr);
+  }
+  body.innerHTML = "";
+  body.appendChild(frag);
+
+  // Update sort indicators
+  document.querySelectorAll("#playerTable th").forEach(th => {
+    th.classList.toggle("sorted", th.dataset.sort === sortKey);
+  });
+  document.getElementById("counter").innerHTML =
+    `Showing <b>${rows.length}</b> of ${DATA.players.length} players · ${selectedNames.size}/6 selected`;
+}
+
+function renderSelected() {
+  const list = document.getElementById("selectedList");
+  const sel = DATA.players.filter(p => selectedNames.has(p.name));
+  // sort by projected mean
+  sel.sort((a,b) => a.liveMean - b.liveMean);
+  if (sel.length === 0) {
+    list.innerHTML = `<div class="sel-empty">Click players in the table to build your team.</div>`;
+  } else {
+    list.innerHTML = sel.map(p => {
+      const at = getAttr(p.name);
+      const cc = countryOf(p.name);
+      return `
+      <div class="sel-row">
+        <span>
+          <span class="flag">${flagFor(cc)}</span><span class="nm">${p.name}</span>
+          ${sgChipHTML(at.g)}${fitChipHTML(p.adjDelta)}
+          &nbsp;<span class="mn">μ=${fmt1(p.liveMean)} σ=${fmt1(p.sd)} cut=${(p.mcP*100).toFixed(0)}%</span>
+        </span>
+        <button class="remove-btn" data-name="${p.name}" title="Remove">×</button>
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".remove-btn").forEach(b =>
+      b.addEventListener("click", (e) => { e.stopPropagation(); toggleSelect(b.dataset.name); }));
+  }
+  document.getElementById("selStatus").textContent = `${sel.length}/6`;
+}
+
+function renderResults() {
+  const sel = DATA.players.filter(p => selectedNames.has(p.name));
+  const kpiMean = document.getElementById("kpiMean");
+  const kpiMeanPar = document.getElementById("kpiMeanPar");
+  const kpiSD = document.getElementById("kpiSD");
+  const kpiP10 = document.getElementById("kpiP10");
+  const kpiP50 = document.getElementById("kpiP50");
+  const kpiP90 = document.getElementById("kpiP90");
+  const kpiP50Par = document.getElementById("kpiP50Par");
+
+  if (sel.length !== 6) {
+    [kpiMean, kpiSD, kpiP10, kpiP50, kpiP90].forEach(el => el.textContent = "—");
+    kpiMeanPar.textContent = `select ${6 - sel.length} more player${6-sel.length===1?"":"s"}`;
+    kpiP50Par.textContent = "—";
+    drawHistogram(null);
+    document.getElementById("simStatus").textContent = "";
+    clearResults();
+    return;
+  }
+  const t0 = performance.now();
+  const tots = simulateSelection(sel, N_SIMS);
+  const s = stats(tots);
+  const t1 = performance.now();
+  kpiMean.textContent = s.mean.toFixed(1);
+  const diff = s.mean - 1152;
+  kpiMeanPar.textContent = (diff >= 0 ? "+" : "") + diff.toFixed(1) + " vs par (1152)";
+  kpiSD.textContent = s.sd.toFixed(2);
+  kpiP10.textContent = s.p10.toFixed(0);
+  kpiP50.textContent = s.p50.toFixed(0);
+  const diff50 = s.p50 - 1152;
+  kpiP50Par.textContent = (diff50 >= 0 ? "+" : "") + diff50.toFixed(0) + " vs par";
+  kpiP90.textContent = s.p90.toFixed(0);
+  document.getElementById("simStatus").textContent = `${N_SIMS.toLocaleString()} sims · ${(t1-t0).toFixed(0)}ms`;
+  drawHistogram(tots);
+  renderSensitivity(sel, s.mean);
+  renderCompare(s.mean);
+}
+
+const BASELINE_OPTIMAL_E = 1152.7; // unadjusted optimal, pre-computed
+let adjustedOptimalE = null;       // last Find-Optimal result, or null
+
+function renderSensitivity(sel, curMean) {
+  // Re-run the sim under each weather scenario without disturbing global state
+  const saved = weather;
+  const N = 3000;
+  const means = {};
+  for (const w of ["neutral","soft","firm"]) {
+    weather = w;
+    recomputeMeans();
+    const t = simulateSelection(sel, N);
+    let sum = 0; for (let i=0;i<t.length;i++) sum += t[i];
+    means[w] = sum / t.length;
+  }
+  weather = saved;
+  recomputeMeans();
+
+  // Scale bars so the shortest (lowest/best) is ~35% and longest ~100%
+  const vals = Object.values(means);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = Math.max(0.1, hi - lo);
+  function pct(v) { return 35 + ((v - lo) / span) * 65; }
+
+  const mapping = [
+    ["Neutral", "neutral"], ["Soft","soft"], ["Firm","firm"]
+  ];
+  document.getElementById("sensNeutralBar").style.width = pct(means.neutral).toFixed(1) + "%";
+  document.getElementById("sensSoftBar").style.width    = pct(means.soft).toFixed(1) + "%";
+  document.getElementById("sensFirmBar").style.width    = pct(means.firm).toFixed(1) + "%";
+  document.getElementById("sensNeutralVal").textContent = means.neutral.toFixed(1);
+  document.getElementById("sensSoftVal").textContent    = means.soft.toFixed(1);
+  document.getElementById("sensFirmVal").textContent    = means.firm.toFixed(1);
+}
+
+function renderCompare(curMean) {
+  const cmpYou = document.getElementById("cmpYou");
+  const cmpBase = document.getElementById("cmpBase");
+  const cmpAdj = document.getElementById("cmpAdj");
+
+  const youDiff = curMean - BASELINE_OPTIMAL_E;
+  const youCls = youDiff < 0 ? "good" : (youDiff > 0 ? "bad" : "");
+  const youSign = youDiff >= 0 ? "+" : "";
+  cmpYou.innerHTML = `${curMean.toFixed(1)}<span class="diff ${youCls}"> ${youSign}${youDiff.toFixed(1)}</span>`;
+
+  cmpBase.innerHTML = `${BASELINE_OPTIMAL_E.toFixed(1)}`;
+
+  if (adjustedOptimalE != null) {
+    const gap = curMean - adjustedOptimalE;
+    const gapCls = gap <= 0.2 ? "good" : "bad";
+    const gapSign = gap >= 0 ? "+" : "";
+    cmpAdj.innerHTML = `${adjustedOptimalE.toFixed(1)}<span class="diff ${gapCls}"> ${gapSign}${gap.toFixed(1)}</span>`;
+  } else {
+    cmpAdj.innerHTML = `<span style="color:var(--muted);font-size:13px;font-weight:400;">click Find Optimal</span>`;
+  }
+}
+
+function clearResults() {
+  ["sensNeutralBar","sensSoftBar","sensFirmBar"].forEach(id => {
+    const e = document.getElementById(id); if (e) e.style.width = "0%";
+  });
+  ["sensNeutralVal","sensSoftVal","sensFirmVal"].forEach(id => {
+    const e = document.getElementById(id); if (e) e.textContent = "—";
+  });
+  const cy = document.getElementById("cmpYou"); if (cy) cy.innerHTML = "—";
+  const ca = document.getElementById("cmpAdj"); if (ca) ca.innerHTML = "—";
+}
+
+/* =========================================================================
+   Historical Backtest
+   ========================================================================= */
+/**
+ * For a given list of player names and a given year, compute the best-4-of-6
+ * total using historical results. Returns {total, used[], dropped[], mc[], dnp[]}
+ * or {na: "reason"} if insufficient data.
+ * Rule: DNP players are excluded from the combo for that year (unavailable).
+ * MC/WD players get a penalty score = that year's worst made-cut + 5. They can
+ * still be used (and will typically be dropped as a worst score).
+ */
+function backtestYear(playerNames, year) {
+  const y = String(year);
+  const maxThat = HIST.maxScorePerYear[y] || 300;
+  const penalty = maxThat + 5;
+  const slots = [];
+  for (const name of playerNames) {
+    const row = HIST.players[name];
+    const v = row ? row[y] : "DNP";
+    if (v === "DNP") {
+      slots.push({name, kind: "dnp"});
+    } else if (v === "MC" || v === "WD") {
+      slots.push({name, kind: "mc", score: penalty, raw: v});
+    } else {
+      slots.push({name, kind: "ok", score: v});
+    }
+  }
+  const available = slots.filter(s => s.kind !== "dnp");
+  if (available.length < 4) {
+    return { na: "Not enough players in the field",
+             slots, dnpCount: slots.length - available.length };
+  }
+  // Sort available by score ascending (lowest = best)
+  const sorted = available.slice().sort((a,b) => a.score - b.score);
+  const usedSet = new Set(sorted.slice(0, 4).map(s => s.name));
+  for (const s of slots) {
+    if (s.kind === "dnp") continue;
+    if (usedSet.has(s.name)) s.used = true;
+  }
+  const total = sorted.slice(0, 4).reduce((a,b) => a + b.score, 0);
+  return {
+    total,
+    parDelta: total - 4 * 72 * 4, // 4 players * 288 = 1152 par
+    slots,
+    dnpCount: slots.length - available.length,
+  };
+}
+
+function renderBacktest() {
+  const body = document.getElementById("histBody");
+  const summary = document.getElementById("histSummary");
+  const sel = DATA.players.filter(p => selectedNames.has(p.name));
+  if (sel.length !== 6) {
+    body.innerHTML = `<tr><td colspan="4" class="hist-na" style="text-align:center;padding:18px;">Select 6 players to see history.</td></tr>`;
+    summary.textContent = "";
+    return;
+  }
+  const names = sel.map(p => p.name);
+  const years = HIST.years.slice().sort((a,b) => b - a); // newest first
+  const rows = [];
+  const validTotals = [];
+  let totalDNP = 0, totalMC = 0;
+  for (const y of years) {
+    const r = backtestYear(names, y);
+    rows.push({year: y, r});
+    if (!r.na) validTotals.push(r.total);
+    if (r.slots) {
+      for (const s of r.slots) {
+        if (s.kind === "dnp") totalDNP++;
+        if (s.kind === "mc") totalMC++;
+      }
+    }
+  }
+
+  const lastName = n => {
+    const parts = n.split(" ");
+    return parts[parts.length - 1].replace(/[áéíóúåäöøü]/gi, m => "aeiouaaoou"["áéíóúåäöøü".indexOf(m.toLowerCase())] || m);
+  };
+  const chipFor = (s) => {
+    const abbr = lastName(s.name);
+    if (s.kind === "dnp") return `<span class="chip dnp" title="${s.name} — didn't play">${abbr}·DNP</span>`;
+    if (s.kind === "mc")  return `<span class="chip mc" title="${s.name} — missed cut">${abbr}·MC</span>`;
+    if (s.used)           return `<span class="chip used" title="${s.name} — counted (${s.score})">${abbr}·${s.score}</span>`;
+    return `<span class="chip dropped" title="${s.name} — dropped (${s.score})">${abbr}·${s.score}</span>`;
+  };
+  body.innerHTML = rows.map(({year, r}) => {
+    if (r.na) {
+      return `<tr>
+        <td class="hist-year">${year}</td>
+        <td colspan="3" class="hist-na">${r.na} (${r.dnpCount}/6 didn't play)</td>
+      </tr>`;
+    }
+    const delta = r.total - 1152;
+    const klass = delta < -2 ? "good" : delta > 2 ? "bad" : "neutral";
+    const sign = delta >= 0 ? "+" : "";
+    const chips = r.slots.map(chipFor).join("");
+    return `<tr>
+      <td class="hist-year">${year}</td>
+      <td class="hist-total">${r.total}</td>
+      <td class="hist-par ${klass}">${sign}${delta}</td>
+      <td class="hist-breakdown">${chips}</td>
+    </tr>`;
+  }).join("");
+
+  // Summary: avg over years with a valid best-4
+  if (validTotals.length === 0) {
+    summary.innerHTML = `<span>No year had 4+ of these players competing. Too many picks with no Masters history.</span>`;
+  } else {
+    const avg = validTotals.reduce((a,b) => a+b, 0) / validTotals.length;
+    const best = Math.min(...validTotals);
+    const worst = Math.max(...validTotals);
+    const bestYr = years[validTotals.indexOf(Math.min(...validTotals))];
+    const worstYr = years[validTotals.indexOf(Math.max(...validTotals))];
+    const dnpNote = totalDNP > 0 ? ` · <span style="color:#8fa294">${totalDNP} player-year${totalDNP===1?"":"s"} DNP</span>` : "";
+    const mcNote = totalMC > 0 ? ` · <span style="color:#e8a898">${totalMC} missed cut</span>` : "";
+    summary.innerHTML =
+      `<b>Avg over ${validTotals.length} valid year${validTotals.length===1?"":"s"}: ${avg.toFixed(1)}</b> ` +
+      `(${(avg-1152).toFixed(1)} vs par) · ` +
+      `best <b>${best}</b> in ${bestYr} · worst <b>${worst}</b> in ${worstYr}${dnpNote}${mcNote}`;
+  }
+}
+
+/* =========================================================================
+   Presets
+   ========================================================================= */
+function renderPresets() {
+  const grid = document.getElementById("presetGrid");
+  grid.innerHTML = PRESETS.map(preset => {
+    // Quick historical snapshot — compute avg over years with ≥4 valid
+    const years = HIST.years;
+    const tots = [];
+    for (const y of years) {
+      const r = backtestYear(preset.players, y);
+      if (!r.na) tots.push(r.total);
+    }
+    const hist = tots.length
+      ? `Historical avg (${tots.length} yrs): <b>${(tots.reduce((a,b)=>a+b,0)/tots.length).toFixed(0)}</b>`
+      : `No valid historical years`;
+    return `<div class="preset" data-id="${preset.id}">
+      <div class="preset-name">${preset.name}</div>
+      <div class="preset-desc">${preset.desc}</div>
+      <div class="preset-hist">${hist}</div>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".preset").forEach(el => {
+    el.addEventListener("click", () => {
+      const p = PRESETS.find(x => x.id === el.dataset.id);
+      if (p) {
+        selectedNames = new Set(p.players);
+        refreshAll();
+      }
+    });
+  });
+}
+
+function drawHistogram(totals) {
+  const canvas = document.getElementById("histCanvas");
+  const W = canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
+  const H = canvas.height = 160 * (window.devicePixelRatio || 1);
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, W, H);
+  if (!totals) {
+    ctx.fillStyle = "#8fa294";
+    ctx.font = (13 * (window.devicePixelRatio||1)) + "px -apple-system, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Select 6 players to see the distribution", W/2, H/2);
+    return;
+  }
+  // Bin data
+  const nbins = 40;
+  let lo = Infinity, hi = -Infinity;
+  for (const v of totals) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  const pad = (hi - lo) * 0.03 + 1;
+  lo -= pad; hi += pad;
+  const bw = (hi - lo) / nbins;
+  const bins = new Array(nbins).fill(0);
+  for (const v of totals) {
+    let k = Math.floor((v - lo) / bw);
+    if (k < 0) k = 0; if (k >= nbins) k = nbins - 1;
+    bins[k]++;
+  }
+  const maxCount = Math.max(...bins);
+  const mL = 40 * (window.devicePixelRatio||1);
+  const mR = 20 * (window.devicePixelRatio||1);
+  const mT = 14 * (window.devicePixelRatio||1);
+  const mB = 28 * (window.devicePixelRatio||1);
+  const plotW = W - mL - mR;
+  const plotH = H - mT - mB;
+  // Axes baseline
+  ctx.strokeStyle = "#234c34"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(mL, mT+plotH); ctx.lineTo(mL+plotW, mT+plotH); ctx.stroke();
+  // Bars
+  for (let i = 0; i < nbins; i++) {
+    const x = mL + (i / nbins) * plotW;
+    const w = (plotW / nbins) - 1;
+    const h = (bins[i] / maxCount) * plotH;
+    ctx.fillStyle = "#2a8f50";
+    ctx.fillRect(x, mT + plotH - h, w, h);
+  }
+  // Par line (1152)
+  const parX = mL + ((1152 - lo) / (hi - lo)) * plotW;
+  if (parX >= mL && parX <= mL + plotW) {
+    ctx.strokeStyle = "#d4a847"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(parX, mT); ctx.lineTo(parX, mT+plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#d4a847";
+    ctx.font = (11 * (window.devicePixelRatio||1)) + "px -apple-system, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("par (1152)", parX + 4, mT + 12 * (window.devicePixelRatio||1));
+  }
+  // Mean line
+  const m = totals.reduce((a,b)=>a+b,0) / totals.length;
+  const meanX = mL + ((m - lo) / (hi - lo)) * plotW;
+  ctx.strokeStyle = "#f4c542"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(meanX, mT); ctx.lineTo(meanX, mT+plotH); ctx.stroke();
+  // X labels
+  ctx.fillStyle = "#8fa294";
+  ctx.font = (10 * (window.devicePixelRatio||1)) + "px -apple-system, sans-serif";
+  ctx.textAlign = "center";
+  for (let i = 0; i <= 4; i++) {
+    const v = lo + (i / 4) * (hi - lo);
+    const x = mL + (i / 4) * plotW;
+    ctx.fillText(v.toFixed(0), x, mT + plotH + 16 * (window.devicePixelRatio||1));
+  }
+  ctx.textAlign = "left";
+  ctx.fillText("best-4 total", mL, H - 4);
+}
+
+/* =========================================================================
+   Actions
+   ========================================================================= */
+function toggleSelect(name) {
+  if (selectedNames.has(name)) {
+    selectedNames.delete(name);
+  } else {
+    if (selectedNames.size >= 6) {
+      // Replace is not great — tell user they need to unselect first.
+      flashMessage("You already have 6 players. Remove one first.");
+      return;
+    }
+    selectedNames.add(name);
+  }
+  refreshAll();
+}
+function flashMessage(msg) {
+  const el = document.getElementById("selStatus");
+  const prev = el.textContent;
+  el.textContent = msg;
+  el.style.color = "#d4a847";
+  setTimeout(() => { el.textContent = prev; el.style.color = ""; }, 1800);
+}
+
+function refreshAll() { renderTable(); renderSelected(); renderResults(); renderBacktest(); }
+
+document.getElementById("useOptimalBtn").addEventListener("click", () => {
+  selectedNames = new Set(DATA.optimal.players);
+  refreshAll();
+});
+document.getElementById("clearSelBtn").addEventListener("click", () => {
+  selectedNames.clear();
+  refreshAll();
+});
+document.getElementById("clearFilter").addEventListener("click", () => {
+  document.getElementById("filter").value = "";
+  filterText = "";
+  renderTable();
+});
+document.getElementById("filter").addEventListener("input", (e) => {
+  filterText = e.target.value.toLowerCase();
+  renderTable();
+});
+
+// Sort headers
+document.querySelectorAll("#playerTable th").forEach(th => {
+  th.addEventListener("click", () => {
+    const k = th.dataset.sort;
+    if (k === "rank") return;
+    if (sortKey === k) { sortDir = -sortDir; }
+    else {
+      sortKey = k;
+      // numeric descending for odds (bigger = worse), ascending for mean/sd
+      sortDir = (k === "winP" || k === "mcP") ? -1 : 1;
+      if (k === "winOdds") sortDir = 1;
+      if (k === "name") sortDir = 1;
+    }
+    renderTable();
+  });
+});
+
+// Parameter sliders
+document.getElementById("scale").addEventListener("input", e => {
+  scale = parseFloat(e.target.value);
+  document.getElementById("scaleVal").textContent = scale.toFixed(1);
+  refreshAll();
+});
+document.getElementById("sigma").addEventListener("input", e => {
+  sigma = parseFloat(e.target.value);
+  document.getElementById("sigmaVal").textContent = sigma.toFixed(1);
+  refreshAll();
+});
+document.getElementById("mcPen").addEventListener("input", e => {
+  mcPenalty = parseFloat(e.target.value);
+  document.getElementById("mcVal").textContent = mcPenalty.toFixed(0);
+  refreshAll();
+});
+
+// Augusta Adjustment toggles
+document.getElementById("togCourseFit").addEventListener("change", e => {
+  useCourseFit = e.target.checked; refreshAll();
+});
+document.getElementById("togAge").addEventListener("change", e => {
+  useAgeCurve = e.target.checked; refreshAll();
+});
+document.getElementById("togLiv").addEventListener("change", e => {
+  useLivRust = e.target.checked; refreshAll();
+});
+document.getElementById("fitWeight").addEventListener("input", e => {
+  courseFitWeight = parseFloat(e.target.value);
+  document.getElementById("fitWeightVal").textContent = courseFitWeight.toFixed(1);
+  refreshAll();
+});
+document.querySelectorAll("#weatherSeg button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    weather = btn.dataset.w;
+    document.querySelectorAll("#weatherSeg button").forEach(b => b.classList.toggle("active", b === btn));
+    refreshAll();
+  });
+});
+
+// Optimizer: brute force over top-K by mean
+document.getElementById("findOptimalBtn").addEventListener("click", () => {
+  const btn = document.getElementById("findOptimalBtn");
+  btn.disabled = true;
+  btn.textContent = "Optimizing…";
+  // Let UI update
+  setTimeout(() => {
+    const top = [...DATA.players].sort((a,b) => a.liveMean - b.liveMean).slice(0, 18);
+    // Sample each candidate N_OPT times once
+    const N_OPT = 3000;
+    const mat = top.map(p => {
+      const arr = new Float64Array(N_OPT);
+      for (let t = 0; t < N_OPT; t++) arr[t] = simScore(p);
+      return arr;
+    });
+    // Enumerate C(18,6) = 18564 combos
+    let bestE = Infinity, bestCombo = null;
+    const idx = [0,1,2,3,4,5];
+    const K = top.length;
+    function expectBest4(idxs) {
+      let sum = 0;
+      const s0 = mat[idxs[0]], s1 = mat[idxs[1]], s2 = mat[idxs[2]],
+            s3 = mat[idxs[3]], s4 = mat[idxs[4]], s5 = mat[idxs[5]];
+      for (let t = 0; t < N_OPT; t++) {
+        const a = [s0[t], s1[t], s2[t], s3[t], s4[t], s5[t]];
+        // sort 6 via insertion sort
+        for (let i = 1; i < 6; i++) {
+          const v = a[i]; let j = i;
+          while (j > 0 && a[j-1] > v) { a[j] = a[j-1]; j--; }
+          a[j] = v;
+        }
+        sum += a[0] + a[1] + a[2] + a[3];
+      }
+      return sum / N_OPT;
+    }
+    // Recursive combination enumeration
+    const combo = new Array(6);
+    (function pick(start, depth) {
+      if (depth === 6) {
+        const e = expectBest4(combo);
+        if (e < bestE) { bestE = e; bestCombo = combo.slice(); }
+        return;
+      }
+      for (let i = start; i <= K - (6 - depth); i++) {
+        combo[depth] = i;
+        pick(i + 1, depth + 1);
+      }
+    })(0, 0);
+    selectedNames = new Set(bestCombo.map(i => top[i].name));
+    adjustedOptimalE = bestE;
+    refreshAll();
+    btn.disabled = false;
+    btn.textContent = "Find Optimal…";
+    flashMessage(`Optimal E=${bestE.toFixed(1)}`);
+  }, 30);
+});
+
+/* =========================================================================
+   Share / Copy
+   ========================================================================= */
+function picksAsText() {
+  const sel = DATA.players.filter(p => selectedNames.has(p.name));
+  sel.sort((a,b) => a.liveMean - b.liveMean);
+  const lines = sel.map((p,i) => `${i+1}. ${flagFor(countryOf(p.name))} ${p.name} (proj ${p.liveMean.toFixed(1)})`);
+  return `⛳ My 2026 Masters Best-4-of-6 picks:\n\n${lines.join("\n")}\n\nPredictor: ${location.href.split("?")[0]}`;
+}
+function picksAsShareURL() {
+  const sel = [...selectedNames];
+  const ids = sel.map(name => {
+    const idx = DATA.players.findIndex(p => p.name === name);
+    return idx >= 0 ? idx : -1;
+  }).filter(i => i >= 0);
+  const url = new URL(location.href);
+  url.searchParams.set("picks", ids.join(","));
+  if (weather !== "neutral") url.searchParams.set("w", weather);
+  return url.toString();
+}
+function parsePicksFromURL() {
+  const params = new URLSearchParams(location.search);
+  const picks = params.get("picks");
+  if (picks) {
+    const ids = picks.split(",").map(n => parseInt(n, 10)).filter(n => !isNaN(n) && n >= 0 && n < DATA.players.length);
+    if (ids.length >= 1 && ids.length <= 6) {
+      return new Set(ids.map(i => DATA.players[i].name));
+    }
+  }
+  const w = params.get("w");
+  if (w && ["neutral","soft","firm"].includes(w)) weather = w;
+  return null;
+}
+
+document.getElementById("copyTextBtn").addEventListener("click", async () => {
+  const txt = picksAsText();
+  try {
+    await navigator.clipboard.writeText(txt);
+    document.getElementById("copyStatus").textContent = "✓ text copied";
+    setTimeout(() => { document.getElementById("copyStatus").textContent = ""; }, 2200);
+  } catch (e) {
+    flashMessage("Clipboard blocked — select and copy manually");
+  }
+});
+document.getElementById("copyLinkBtn").addEventListener("click", async () => {
+  const url = picksAsShareURL();
+  try {
+    await navigator.clipboard.writeText(url);
+    document.getElementById("copyStatus").textContent = "✓ link copied";
+    setTimeout(() => { document.getElementById("copyStatus").textContent = ""; }, 2200);
+  } catch (e) {
+    flashMessage("Clipboard blocked — copy from address bar instead");
+  }
+});
+
+/* Load picks from URL if present, otherwise default to baseline optimal */
+const urlPicks = parsePicksFromURL();
+if (urlPicks && urlPicks.size > 0) {
+  selectedNames = urlPicks;
+  // If weather was in URL, reflect it in the UI
+  document.querySelectorAll("#weatherSeg button").forEach(b =>
+    b.classList.toggle("active", b.dataset.w === weather));
+} else {
+  selectedNames = new Set(DATA.optimal.players);
+}
+renderPresets();
+refreshAll();
+
+/* Build date stamp */
+document.getElementById("buildDate").textContent = new Date().toLocaleDateString();
+
+/* Redraw histogram on resize */
+window.addEventListener("resize", () => {
+  const sel = DATA.players.filter(p => selectedNames.has(p.name));
+  if (sel.length === 6) renderResults();
+});
+</script>
+</body>
+</html>
