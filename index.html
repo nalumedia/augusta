@@ -99,6 +99,12 @@
   .param .val { font-variant-numeric: tabular-nums; color: var(--cream); font-size: 12px; }
   .param input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--gold); }
 
+  /* Column legend */
+  .col-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11px; color: var(--muted);
+    padding: 6px 2px 10px 2px; line-height: 1.4; }
+  .col-legend span b { color: var(--gold); font-weight: 600; }
+  .col-legend .sort-hint { margin-left: auto; font-style: italic; color: #6b8073; }
+
   /* Filter */
   .filter-row { display: flex; gap: 8px; margin-bottom: 10px; }
   .filter-row input { flex: 1; background: var(--card2); border: 1px solid var(--border);
@@ -255,6 +261,12 @@
       <input id="filter" type="text" placeholder="Search player name…">
       <button class="btn ghost" id="clearFilter">Clear</button>
     </div>
+    <div class="col-legend">
+      <span><b>Form</b> = iron-play trend, last 12 wks (🟡 hot)</span>
+      <span><b>Proj</b> = projected 72-hole score (lower = better)</span>
+      <span><b>Augusta Fit</b> = course-history bump (🟢 helps, 🔴 hurts)</span>
+      <span class="sort-hint">Click any column header to sort</span>
+    </div>
     <div class="table-wrap">
       <table id="playerTable">
         <thead><tr>
@@ -262,13 +274,12 @@
           <th data-sort="name">Player</th>
           <th data-sort="age" class="num">Age</th>
           <th data-sort="tour" title="Tour: PGA, LIV, or International">Tour</th>
-          <th data-sort="sgApp" class="num" title="Strokes Gained: Approach trend, last 12 weeks">SG:APP</th>
-          <th data-sort="winOdds" class="num">Odds</th>
-          <th data-sort="winP" class="num">Win%</th>
-          <th data-sort="mcP" class="num">Cut%</th>
-          <th data-sort="liveMean" class="num sorted">Proj</th>
-          <th data-sort="adjDelta" class="num" title="Augusta-specific ± strokes">Δ</th>
-          <th data-sort="sd" class="num">σ</th>
+          <th data-sort="sgApp" class="num" title="Iron-play form (Strokes Gained: Approach) over last 12 weeks. Gold = hot, red = cold.">Form</th>
+          <th data-sort="winOdds" class="num" title="Outright win odds from the book">Odds</th>
+          <th data-sort="winP" class="num" title="De-vigged chance of winning outright">Win%</th>
+          <th data-sort="mcP" class="num" title="Chance of missing the cut">Miss Cut%</th>
+          <th data-sort="liveMean" class="num sorted" title="Projected 72-hole total score — lower is better">Proj</th>
+          <th data-sort="adjDelta" class="num" title="Total Augusta adjustment in strokes. Negative (green) = helps, positive (red) = hurts.">Augusta Fit</th>
         </tr></thead>
         <tbody id="playerBody"></tbody>
       </table>
@@ -442,7 +453,7 @@
           <input id="scale" type="range" min="1.0" max="4.0" step="0.1" value="2.0">
         </div>
         <div class="param">
-          <label>Per-tournament σ (shot-to-shot noise)</label>
+          <label>Shot-to-shot noise (stroke volatility)</label>
           <span class="val" id="sigmaVal">4.5</span>
           <input id="sigma" type="range" min="2.5" max="8.0" step="0.1" value="4.5">
         </div>
@@ -541,8 +552,8 @@
         <p>Par for 4 rounds at Augusta is 288, so <code>4 × 288 = 1152</code> is "all four picks shot par." The "vs par" number tells you how many strokes under (or over) that benchmark your team averages.</p>
       </div>
       <div class="faq-item">
-        <h4>σ (sigma)</h4>
-        <p>Standard deviation of your best-4 total across sims. A small σ means your team is consistent; a big σ means boom-or-bust. LIV-heavy teams tend to have higher σ.</p>
+        <h4>Std Dev (team volatility)</h4>
+        <p>Standard deviation of your best-4 total across sims. Small = consistent team, big = boom-or-bust. LIV-heavy teams tend to be more volatile. Shown in the "Std Dev" KPI box in Expected Result.</p>
       </div>
       <div class="faq-item">
         <h4>P10 / P90</h4>
@@ -553,8 +564,8 @@
         <p>Each player's mean 72-hole score from the skill model, calibrated so the implied win probabilities match Vegas. Scheffler's ~281 means the model thinks he averages ~−7 at Augusta.</p>
       </div>
       <div class="faq-item">
-        <h4>Cut% and Win%</h4>
-        <p>Cut% is the chance that player misses the cut (triggers the penalty). Win% is their modeled chance of posting the outright lowest score of the field in a single sim — roughly matches the de-vigged book price.</p>
+        <h4>Miss Cut% and Win%</h4>
+        <p><b>Miss Cut%</b> is the chance that player misses the cut (triggers the penalty) — Scheffler ~7%, a long-shot first-timer ~45%. <b>Win%</b> is their modeled chance of posting the outright lowest score, roughly matching the de-vigged book price.</p>
       </div>
       <div class="faq-item">
         <h4>Histogram</h4>
@@ -589,8 +600,8 @@
         <p>Controls how much better the favorites are than the field. Higher values spread out projected scores — Scheffler gets lower, longshots get higher. Default 2.0 reproduces the book's win distribution.</p>
       </div>
       <div class="faq-item">
-        <h4>σ (per-round noise)</h4>
-        <p>How much a single player's score bounces around their mean. Default 4.5 strokes matches historical PGA Tour variance at majors. Bumping it up makes the tournament more random and helps longshots.</p>
+        <h4>Shot-to-shot noise</h4>
+        <p>How much a single player's score bounces around their projected mean. Default 4.5 strokes matches historical PGA Tour variance at majors. Bumping it up makes the tournament more random and helps longshots.</p>
       </div>
       <div class="faq-item">
         <h4>Missed-cut penalty</h4>
@@ -919,6 +930,7 @@ function sortedPlayers() {
     // For "hotter is better" fields, ascending = best-first
     if (sortKey === "sgApp") { av = -a.sgApp; bv = -b.sgApp; }
     if (sortKey === "winP") { av = -a.winP; bv = -b.winP; }
+    if (sortKey === "mcP") { av = -a.mcP; bv = -b.mcP; } // ascending = lowest miss-cut %
     if (typeof av === "string") return sortDir * av.localeCompare(bv);
     return sortDir * (av - bv);
   });
@@ -974,10 +986,9 @@ function renderTable() {
       <td class="num">${sgChipHTML(at.g)}</td>
       <td class="num">${fmtOdds(p.winOdds)}</td>
       <td class="num">${fmtPct(p.winP)}</td>
-      <td class="num">${(p.mcP*100).toFixed(0)}%</td>
+      <td class="num">${((1 - p.mcP)*100).toFixed(0)}%</td>
       <td class="num">${fmt1(p.liveMean)}</td>
-      <td class="num">${fitChipHTML(p.adjDelta)}</td>
-      <td class="num">${fmt1(p.sd)}</td>`;
+      <td class="num">${fitChipHTML(p.adjDelta)}</td>`;
     tr.addEventListener("click", () => toggleSelect(p.name));
     frag.appendChild(tr);
   }
@@ -1008,7 +1019,7 @@ function renderSelected() {
         <span>
           <span class="flag">${flagFor(cc)}</span><span class="nm">${p.name}</span>
           ${sgChipHTML(at.g)}${fitChipHTML(p.adjDelta)}
-          &nbsp;<span class="mn">μ=${fmt1(p.liveMean)} σ=${fmt1(p.sd)} cut=${(p.mcP*100).toFixed(0)}%</span>
+          &nbsp;<span class="mn">proj ${fmt1(p.liveMean)} · miss ${((1-p.mcP)*100).toFixed(0)}%</span>
         </span>
         <button class="remove-btn" data-name="${p.name}" title="Remove">×</button>
       </div>`;
