@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026 Masters Pool — Live Results</title>
+<style>
+  :root {
+    --green-dk: #0e4d2a;
+    --green:    #1a6b3c;
+    --green-lt: #2a8f50;
+    --gold:     #d4a847;
+    --cream:    #f5f1e6;
+    --bg:       #0a1a10;
+    --card:     #11261a;
+    --card2:    #163020;
+    --border:   #234c34;
+    --text:     #e8e4d2;
+    --muted:    #8fa294;
+    --accent:   #f4c542;
+    --bad:      #c44a3a;
+    --red:      #e85545;
+    --birdie:   #4caf50;
+    --eagle:    #2196f3;
+    --bogey:    #e8a040;
+    --dbl:      #e06030;
+    --liv:      #e8a898;
+    --pga:      #7ed490;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+    font-size: 14px; line-height: 1.5; }
+
+  header { background: linear-gradient(135deg, var(--green-dk), var(--green));
+    padding: 20px 28px; border-bottom: 2px solid var(--gold); }
+  header h1 { font-size: 22px; color: var(--cream); letter-spacing: 0.3px; }
+  header .subtitle { color: var(--cream); opacity: 0.75; font-size: 13px; margin-top: 2px; }
+  header .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red); animation: pulse 1.5s infinite; margin-right: 6px; vertical-align: middle; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+  /* Prize banner */
+  .prize-banner { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .prize-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; text-align: center; }
+  .prize-card.first { border-color: var(--gold); background: linear-gradient(135deg, var(--green-dk), var(--green)); }
+  .prize-card .place { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .prize-card .amount { font-size: 26px; font-weight: 700; color: var(--gold); margin-top: 4px;
+    font-variant-numeric: tabular-nums; }
+  .prize-card.first .amount { font-size: 32px; }
+  .prize-card .pct { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Round status */
+  .round-status { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .round-status .round-label { font-size: 13px; font-weight: 600; color: var(--gold);
+    text-transform: uppercase; letter-spacing: 1px; }
+  .round-status .round-info { font-size: 13px; color: var(--muted); }
+  .round-dots { display: flex; gap: 6px; margin-left: auto; }
+  .round-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 11px; font-weight: 600; border: 2px solid var(--border); color: var(--muted); }
+  .round-dot.active { border-color: var(--gold); color: var(--gold); background: rgba(212,168,71,0.15); }
+  .round-dot.done { border-color: var(--green-lt); color: var(--green-lt); background: rgba(42,143,80,0.15); }
+
+  /* Broadcast card */
+  .broadcast { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; margin-bottom: 20px; line-height: 1.7; font-size: 14px; }
+  .broadcast h2 { font-size: 14px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600; margin-bottom: 12px; }
+  .broadcast p { margin-bottom: 10px; }
+  .broadcast .quote { border-left: 3px solid var(--gold); padding-left: 12px; margin: 12px 0;
+    font-style: italic; color: var(--cream); }
+  .broadcast .callout { display: inline-block; background: rgba(212,168,71,0.15); border: 1px solid var(--gold);
+    border-radius: 6px; padding: 2px 8px; font-weight: 600; color: var(--gold); font-size: 13px; }
+  .broadcast .red { color: var(--bad); font-weight: 600; }
+  .broadcast .green { color: var(--birdie); font-weight: 600; }
+
+  /* Insight grid */
+  .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .insight-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .insight-card h3 { font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.8px;
+    font-weight: 600; margin-bottom: 10px; }
+  .insight-card .stat-row { display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; border-bottom: 1px solid rgba(35,76,52,0.3); font-size: 13px; }
+  .insight-card .stat-row:last-child { border-bottom: none; }
+  .insight-card .stat-label { color: var(--muted); }
+  .insight-card .stat-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .insight-card .stat-val.good { color: var(--birdie); }
+  .insight-card .stat-val.bad { color: var(--bad); }
+
+  /* Bar chart */
+  .bar-chart { display: flex; flex-direction: column; gap: 6px; }
+  .bar-row { display: grid; grid-template-columns: 100px 1fr 50px; gap: 8px; align-items: center; font-size: 12px; }
+  .bar-label { text-align: right; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { height: 20px; background: var(--card2); border-radius: 4px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+  .bar-val { font-weight: 600; font-variant-numeric: tabular-nums; font-size: 12px; }
+
+  /* Team leaderboard */
+  .leaderboard { display: flex; flex-direction: column; gap: 8px; }
+  .team-row { background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s; overflow: hidden; }
+  .team-row:hover { border-color: var(--green-lt); }
+  .team-row.expanded { border-color: var(--gold); }
+  .team-row.first-place { box-shadow: 0 0 0 2px var(--gold); }
+  .team-header { display: grid; grid-template-columns: 48px 1fr auto auto; align-items: center;
+    padding: 12px 16px; gap: 12px; }
+  .team-pos { font-size: 20px; font-weight: 700; color: var(--gold); text-align: center;
+    font-variant-numeric: tabular-nums; min-width: 36px; }
+  .team-pos.top3 { color: var(--accent); }
+  .team-info { display: flex; flex-direction: column; }
+  .team-name { font-size: 15px; font-weight: 600; }
+  .team-owner { font-size: 12px; color: var(--muted); }
+  .team-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 8px;
+    margin-left: 6px; font-weight: 600; vertical-align: middle; }
+  .team-score { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums;
+    text-align: right; min-width: 60px; }
+  .team-score.under { color: var(--birdie); }
+  .team-score.over { color: var(--bad); }
+  .team-score.even { color: var(--text); }
+  .team-total-strokes { font-size: 12px; color: var(--muted); text-align: right; }
+  .team-proj { font-size: 11px; color: var(--muted); text-align: right; padding-right: 16px; }
+  .team-proj .proj-val { color: var(--cream); font-weight: 500; }
+
+  /* Expanded player detail */
+  .team-detail { display: none; padding: 0 16px 14px; }
+  .team-row.expanded .team-detail { display: block; }
+  .player-grid { display: grid; gap: 6px; }
+  .player-line { display: grid; grid-template-columns: 24px 1fr auto auto auto; align-items: center;
+    gap: 8px; padding: 6px 10px; background: var(--card2); border-radius: 5px; font-size: 13px; }
+  .player-line.counting { border-left: 3px solid var(--gold); }
+  .player-line.dropped { opacity: 0.45; border-left: 3px solid transparent; }
+  .player-flag { font-size: 16px; }
+  .player-name { font-weight: 500; }
+  .player-r1 { font-variant-numeric: tabular-nums; text-align: right; min-width: 36px; }
+  .player-par { font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; min-width: 36px; }
+  .player-par.under { color: var(--birdie); }
+  .player-par.over { color: var(--bad); }
+  .player-par.even { color: var(--muted); }
+  .player-pos { font-size: 11px; color: var(--muted); text-align: right; min-width: 36px; }
+  .counting-label { font-size: 10px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 4px; }
+  .dropped-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;
+    margin-top: 6px; margin-bottom: 4px; }
+
+  /* Tour chip */
+  .tour-chip { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px;
+    font-weight: 600; line-height: 16px; vertical-align: middle; margin-left: 4px; }
+  .chip-liv { background: rgba(232,168,152,0.25); color: var(--liv); }
+  .chip-pga { background: rgba(126,212,144,0.2); color: var(--pga); }
+
+  /* Card */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px;
+    margin-top: 20px; }
+  .card h2 { font-size: 14px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 600; margin-bottom: 12px; }
+
+  /* Masters leaderboard */
+  .masters-lb { max-height: 400px; overflow-y: auto; }
+  .masters-lb table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .masters-lb th { padding: 6px 8px; text-align: left; color: var(--muted); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.4px; font-weight: 500;
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card); }
+  .masters-lb td { padding: 5px 8px; border-bottom: 1px solid rgba(35,76,52,0.3); }
+  .masters-lb tr.pool-player { background: rgba(212,168,71,0.08); }
+  .masters-lb .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Footer */
+  .footer { text-align: center; padding: 30px 20px; color: var(--muted); font-size: 12px; }
+  .footer a { color: var(--gold); text-decoration: none; }
+
+  /* Rules card */
+  .rules-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .rule-item { background: var(--card2); border-radius: 6px; padding: 10px 12px; font-size: 12px; }
+  .rule-item .rule-label { color: var(--gold); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+
+  /* Nav link */
+  .nav-link { display: inline-block; margin-top: 8px; color: var(--gold); text-decoration: none;
+    font-size: 12px; opacity: 0.8; }
+  .nav-link:hover { opacity: 1; text-decoration: underline; }
+
+  /* Canvas for chart */
+  .chart-canvas { width: 100%; height: 200px; background: var(--card2); border: 1px solid var(--border);
+    border-radius: 6px; display: block; margin-top: 8px; }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .prize-banner { grid-template-columns: 1fr; }
+    .team-header { grid-template-columns: 40px 1fr auto; }
+    .team-proj { display: none; }
+    .player-line { grid-template-columns: 22px 1fr auto auto; }
+    .player-pos { display: none; }
+    .insight-grid { grid-template-columns: 1fr; }
+    .bar-row { grid-template-columns: 80px 1fr 40px; }
+  }
+
+  /* Versus cards */
+  .vs-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; text-align: center; }
+  .vs-side { padding: 12px; }
+  .vs-side .vs-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .vs-side .vs-score { font-size: 28px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .vs-side .vs-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .vs-divider { font-size: 20px; font-weight: 700; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="live-dot"></span> 2026 Masters Pool — Live Results</h1>
+  <div class="subtitle">27 Teams · 810 Clams 🐚 · Best 4 of 6 · After Round 1</div>
+  <a class="nav-link" href="index.html">← Back to Predictor Tool</a>
+</header>
+
+<div class="container" id="app"></div>
+
+<script>
+// ─── Round 1 Scores (ESPN confirmed) ──────────────────────────
+const R1 = {
+  "Sam Burns": 67, "Rory McIlroy": 67,
+  "Kurt Kitayama": 69, "Jason Day": 69, "Patrick Reed": 69,
+  "Shane Lowry": 70, "Xander Schauffele": 70, "Justin Rose": 70, "Scottie Scheffler": 70,
+  "Haotong Li": 71, "Nick Taylor": 71, "Tommy Fleetwood": 71, "Brian Campbell": 71,
+  "Aaron Rai": 71, "Jacob Bridgeman": 71, "Gary Woodland": 71,
+  "Max Homa": 72, "Matt McCarty": 72, "Kristoffer Reitan": 72, "Keegan Bradley": 72,
+  "Ryan Gerard": 72, "Hideki Matsuyama": 72, "Sam Stevens": 72, "Wyndham Clark": 72,
+  "Adam Scott": 72, "Sergio Garcia": 72, "Michael Brennan": 72, "Chris Gotterup": 72,
+  "Jordan Spieth": 72, "Brooks Koepka": 72, "Justin Thomas": 72, "Ben Griffin": 72,
+  "Jake Knapp": 73, "Dustin Johnson": 73, "Akshay Bhatia": 73, "Russell Henley": 73,
+  "Cameron Young": 73, "Sepp Straka": 73, "Harris English": 73, "Patrick Cantlay": 73,
+  "Jose Maria Olazabal": 74, "Cameron Smith": 74, "Matt Fitzpatrick": 74,
+  "Collin Morikawa": 74, "Tyrrell Hatton": 74, "J.J. Spaun": 74, "Ludvig Aberg": 74,
+  "Ethan Fang": 74, "Min Woo Lee": 75, "Si Woo Kim": 75, "Robert MacIntyre": 77,
+  "Marco Penge": 77, "Bryson DeChambeau": 76, "Jon Rahm": 78, "Bubba Watson": 76,
+  "Viktor Hovland": 75, "Daniel Berger": 76, "Tom McKibbin": 75,
+  "Davis Riley": 76, "Aldrich Potgieter": 78, "Fred Couples": 78
+};
+const PAR = 72;
+
+// ─── Countries ────────────────────────────────────────────────
+const COUNTRIES = {
+  "Scottie Scheffler":"US","Jon Rahm":"ES","Bryson DeChambeau":"US","Rory McIlroy":"GB",
+  "Ludvig Aberg":"SE","Xander Schauffele":"US","Cameron Young":"US","Tommy Fleetwood":"GB",
+  "Matt Fitzpatrick":"GB","Hideki Matsuyama":"JP","Collin Morikawa":"US","Min Woo Lee":"AU",
+  "Robert MacIntyre":"GB","Justin Rose":"GB","Brooks Koepka":"US","Jordan Spieth":"US",
+  "Patrick Reed":"US","Chris Gotterup":"US","Viktor Hovland":"NO","Si Woo Kim":"KR",
+  "Akshay Bhatia":"US","Russell Henley":"US","Justin Thomas":"US","Adam Scott":"AU",
+  "Patrick Cantlay":"US","Jake Knapp":"US","Shane Lowry":"IE","Jason Day":"AU",
+  "J.J. Spaun":"US","Sam Burns":"US","Gary Woodland":"US","Marco Penge":"GB",
+  "Ryan Gerard":"US","Cameron Smith":"AU","Dustin Johnson":"US","Harris English":"US",
+  "Kurt Kitayama":"US","Sergio Garcia":"ES","Bubba Watson":"US","Fred Couples":"US",
+  "Haotong Li":"CN","Ben Griffin":"US","Max Homa":"US","Keegan Bradley":"US",
+  "Tyrrell Hatton":"GB","Sepp Straka":"AT","Wyndham Clark":"US","Nick Taylor":"CA",
+  "Aaron Rai":"GB","Brian Campbell":"US","Michael Brennan":"US","Jacob Bridgeman":"US",
+  "Matt McCarty":"US","Kristoffer Reitan":"NO","Sam Stevens":"US"
+};
+
+// ─── Tour / tags ──────────────────────────────────────────────
+const LIV_PLAYERS = new Set(["Jon Rahm","Bryson DeChambeau","Brooks Koepka","Patrick Reed",
+  "Cameron Smith","Dustin Johnson","Tyrrell Hatton","Bubba Watson","Sergio Garcia","Si Woo Kim"]);
+
+const PAST_CHAMPS = {
+  "Scottie Scheffler": "2022, 2024", "Rory McIlroy": "2025", "Jon Rahm": "2023",
+  "Hideki Matsuyama": "2021", "Jordan Spieth": "2015", "Patrick Reed": "2018",
+  "Dustin Johnson": "2020", "Adam Scott": "2013", "Sergio Garcia": "2017",
+  "Bubba Watson": "2012, 2014", "Danny Willett": "2016", "Cameron Smith": "",
+  "Justin Rose": "", "Shane Lowry": "", "Brooks Koepka": ""
+};
+
+// Players known for Augusta course fit (from our predictor ATTRS)
+const AUGUSTA_HEROES = new Set(["Justin Rose","Jordan Spieth","Patrick Reed","Shane Lowry",
+  "Hideki Matsuyama","Jason Day","Adam Scott","Sam Burns","Sergio Garcia","Bubba Watson"]);
+
+// ─── Projected means ─────────────────────────────────────────
+const PROJ_MEAN = {
+  "Scottie Scheffler": 287.4, "Jon Rahm": 289.5, "Bryson DeChambeau": 289.7,
+  "Rory McIlroy": 289.7, "Ludvig Aberg": 290.3, "Xander Schauffele": 290.0,
+  "Cameron Young": 292.3, "Tommy Fleetwood": 292.6, "Matt Fitzpatrick": 292.8,
+  "Hideki Matsuyama": 293.0, "Collin Morikawa": 291.6, "Min Woo Lee": 293.4,
+  "Robert MacIntyre": 293.0, "Justin Rose": 291.4, "Brooks Koepka": 293.2,
+  "Jordan Spieth": 292.5, "Patrick Reed": 293.8, "Chris Gotterup": 294.5,
+  "Si Woo Kim": 294.2, "Akshay Bhatia": 293.6, "Russell Henley": 294.0,
+  "Gary Woodland": 295.5, "Sam Burns": 292.2, "Shane Lowry": 293.0,
+  "Jason Day": 294.0, "J.J. Spaun": 295.0, "Marco Penge": 296.0,
+  "Ryan Gerard": 295.5, "Cameron Smith": 294.2,
+  "Dustin Johnson": 294.8, "Harris English": 294.5, "Kurt Kitayama": 293.5,
+  "Bubba Watson": 296.0, "Fred Couples": 300.0
+};
+const MC_PENALTY = 310;
+
+// ─── Name normalization ──────────────────────────────────────
+const NAME_MAP = {
+  "bryson": "Bryson DeChambeau", "bryson d": "Bryson DeChambeau",
+  "bryson dechambeau": "Bryson DeChambeau",
+  "scottie": "Scottie Scheffler", "scottie s": "Scottie Scheffler",
+  "scottie scheffler": "Scottie Scheffler", "scotty sheffler": "Scottie Scheffler",
+  "scott scheffler": "Scottie Scheffler", "scottie schaeffler": "Scottie Scheffler",
+  "rory m": "Rory McIlroy", "rory mcilroy": "Rory McIlroy",
+  "rory mcclroy": "Rory McIlroy",
+  "xander": "Xander Schauffele", "xander schauffele": "Xander Schauffele",
+  "xander schauffle": "Xander Schauffele",
+  "john rahm": "Jon Rahm", "jon rahm": "Jon Rahm", "rahm": "Jon Rahm",
+  "ludwig aberg": "Ludvig Aberg", "ludvig aberg": "Ludvig Aberg",
+  "ludvid aberg": "Ludvig Aberg", "ludvig aoberg": "Ludvig Aberg",
+  "ludvig åberg": "Ludvig Aberg", "aberg": "Ludvig Aberg",
+  "justin rose": "Justin Rose", "morikawa": "Collin Morikawa",
+  "collin morikawa": "Collin Morikawa",
+  "tommy fleetwood": "Tommy Fleetwood", "fleetwood": "Tommy Fleetwood",
+  "brooks": "Brooks Koepka", "brooks koepka": "Brooks Koepka", "brooks kopeka": "Brooks Koepka",
+  "cam young": "Cameron Young", "cameron young": "Cameron Young",
+  "jordan spieth": "Jordan Spieth",
+  "matt fitzpatrick": "Matt Fitzpatrick", "matthew fitzpatrick": "Matt Fitzpatrick",
+  "hideki matsuyama": "Hideki Matsuyama",
+  "robert macintyre": "Robert MacIntyre",
+  "akshay bhatia": "Akshay Bhatia", "bhatia": "Akshay Bhatia",
+  "patrick reed": "Patrick Reed",
+  "shane lowry": "Shane Lowry", "shane lowery": "Shane Lowry",
+  "si woo kim": "Si Woo Kim", "min woo lee": "Min Woo Lee",
+  "chris gotterup": "Chris Gotterup",
+  "russel henley": "Russell Henley", "russell henley": "Russell Henley",
+  "sam burns": "Sam Burns", "gary woodland": "Gary Woodland",
+  "jj spaun": "J.J. Spaun", "ryan gerard": "Ryan Gerard", "marco penge": "Marco Penge",
+  "scheffler": "Scottie Scheffler", "dechambeau": "Bryson DeChambeau",
+  "rose": "Justin Rose", "spieth": "Jordan Spieth"
+};
+function normalize(raw) {
+  const s = raw.trim().toLowerCase().replace(/[^\w\s.åöäé]/g, "").replace(/\s+/g, " ");
+  if (NAME_MAP[s]) return NAME_MAP[s];
+  for (const [k, v] of Object.entries(NAME_MAP)) { if (s.includes(k) || k.includes(s)) return v; }
+  return raw.trim().split(/\s+/).map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+}
+
+// ─── Parse 27 teams ──────────────────────────────────────────
+const RAW_TEAMS = [
+  { owner: "TBONE", team: "TBONE", players: ["Bryson","Scottie","Justin Rose","Morikawa","Xander","Brooks"] },
+  { owner: "Brian McHugh", team: "Let's Go Buffalo!", players: ["Tommy Fleetwood","Robert MacIntyre","Shane Lowery","Akshay Bhatia","Ludvig Aberg","Bryson DeChambeau"] },
+  { owner: "Craig Roah", team: "", players: ["Collin Morikawa","Scottie Scheffler","Rory McIlroy","Justin Rose","Ludvig Åberg","Gary Woodland"] },
+  { owner: "Joel Almquist", team: "Almo", players: ["Scottie Scheffler","Jon Rahm","Xander Schauffele","Ludvig Åberg","Collin Morikawa","Patrick Reed"] },
+  { owner: "Lee Sanudo", team: "Los Chadres", players: ["Xander Schauffle","Cam Young","Matt Fitzpatrick","Jon Rahm","Scottie Scheffler","Min Woo Lee"] },
+  { owner: "Jake Zuanich", team: "", players: ["Bryson DeChambeau","Scottie Scheffler","Xander Schauffele","Rory Mcclroy","Matthew Fitzpatrick","Ludvig Aberg"] },
+  { owner: "Bryan McRee", team: "Glory to Rory", players: ["Scottie Scheffler","Rory McILroy","Justin Rose","Ludwig Aberg","John Rahm","Bryson Dechambeau"] },
+  { owner: "Steve Lundby", team: "Guessing & Hoping", players: ["Scottie Scheffler","Ludvid Aberg","Xander Schauffele","Tommy Fleetwood","Collin Morikawa","Justin Rose"] },
+  { owner: "Frank Grecco", team: "Hello Friends", players: ["Bryson DeChambeau","Xander Schauffele","Justin Rose","Scottie Scheffler","Cam Young","Ludvig Aberg"] },
+  { owner: "Ben Harrington", team: "2834 Washington Rd", players: ["JJ Spaun","Scottie Scheffler","Robert MacIntyre","Cameron Young","Jon Rahm","Bryson DeChambeau"] },
+  { owner: "Frank Dranginis", team: "No Chance", players: ["Ludvig Aberg","Bryson Dechambeau","John Rahm","Ryan Gerard","Marco Penge","Rory McIlroy"] },
+  { owner: "Dave Lauder", team: "Sand Trap", players: ["Akshay Bhatia","Chris Gotterup","Matt Fitzpatrick","Hideki Matsuyama","Justin Rose","Cameron Young"] },
+  { owner: "Papa Lauder", team: "AC Boise", players: ["Bryson DeChambeau","Matt Fitzpatrick","Justin Rose","Cameron Young","Jon Rahm","Scottie Scheffler"] },
+  { owner: "Alex Jacomino", team: "CubanRednecks", players: ["Scottie Scheffler","Jon Rahm","Rory McIlroy","Bryson DeChambeau","Tommy Fleetwood","Xander Schauffele"] },
+  { owner: "Ryan Dranginis", team: "Bigfoots", players: ["Scottie Scheffler","Jon Rahm","Bryson DeChambeau","Rory McIlroy","Ludvig Aberg","Xander Schauffele"] },
+  { owner: "Chris Murray", team: "Murray's Magnolia Men", players: ["Scottie Scheffler","Jon Rahm","Bryson DeChambeau","Si Woo Kim","Shane Lowry","Patrick Reed"] },
+  { owner: "Keith Hendricks", team: "Tampa Terror", players: ["Bryson DeChambeau","Jon Rahm","Xander Schauffele","Ludvig Åberg","Tommy Fleetwood","Jordan Spieth"] },
+  { owner: "Zak", team: "Z$", players: ["Bryson DeChambeau","Scottie Scheffler","Jon Rahm","Xander Schauffele","Ludwig Aberg","Cameron Young"] },
+  { owner: "Brian Lauber", team: "Handy", players: ["Scottie Scheffler","Xander Schauffele","Tommy Fleetwood","Rory M","John Rahm","Bryson DeChambeau"] },
+  { owner: "Brian Crum", team: "", players: ["Rahm","Aberg","Cam Young","Bhatia","Scheffler","Xander"] },
+  { owner: "Bryan McRee", team: "Butler Cabin Ballers", players: ["Scott Scheffler","Cameron Young","Ludwig Aberg","John Rahm","Justin Rose","Rory McIlroy"] },
+  { owner: "Sven", team: "Bombers", players: ["Bryson DeChambeau","Jon Rahm","Xander Schauffele","Tommy Fleetwood","Gary Woodland","Chris Gotterup"] },
+  { owner: "Tim Schaeffler", team: "", players: ["Brooks Kopeka","Ludvig Aberg","Bryson Dechambeau","Cameron Young","Jon Rahm","Scottie Schaeffler"] },
+  { owner: "Frank Snyder", team: "Frankie88", players: ["Bryson D","Rory M","Justin Rose","Matt Fitzpatrick","John Rahm","Scottie S"] },
+  { owner: "Jim Day", team: "Jed's Pix", players: ["Scotty Sheffler","John Rahm","Rory McIlroy","Bryson Dechambeau","Tommy Fleetwood","Russel Henley"] },
+  { owner: "Mark Minukas", team: "Smooth Stroke", players: ["Brooks Koepka","Justin Rose","Bryson","Scottie","Xander","Fleetwood"] },
+  { owner: "Pete Lauder", team: "Still in Fourth", players: ["Sam Burns","Patrick Reed","Xander Schauffele","Cam Young","Ludvig Aoberg","Si Woo Kim"] }
+];
+
+// ─── Helpers ─────────────────────────────────────────────────
+function flagFor(code) {
+  if (!code || code.length !== 2) return "🏳️";
+  const A = 127397;
+  return String.fromCodePoint(code.charCodeAt(0) + A, code.charCodeAt(1) + A);
+}
+function scoreToPar(s) { return s - PAR; }
+function formatPar(tp) { return tp === 0 ? "E" : tp > 0 ? "+" + tp : String(tp); }
+function parClass(tp) { return tp < 0 ? "under" : tp > 0 ? "over" : "even"; }
+function tourChip(name) {
+  if (LIV_PLAYERS.has(name)) return `<span class="tour-chip chip-liv">LIV</span>`;
+  return "";
+}
+function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+// ─── Build Masters leaderboard ───────────────────────────────
+const mastersLB = Object.entries(R1)
+  .map(([name, score]) => ({ name, score, toPar: score - PAR }))
+  .sort((a, b) => a.score - b.score);
+let pos = 1;
+for (let i = 0; i < mastersLB.length; i++) {
+  if (i > 0 && mastersLB[i].score > mastersLB[i-1].score) pos = i + 1;
+  mastersLB[i].pos = pos;
+  mastersLB[i].posStr = (i > 0 && mastersLB[i].score === mastersLB[i-1].score) ? "T" + pos : String(pos);
+}
+
+// ─── Build teams ─────────────────────────────────────────────
+const poolPlayerSet = new Set();
+const TEAMS = RAW_TEAMS.map(raw => {
+  const players = raw.players.map(p => {
+    const name = normalize(p);
+    poolPlayerSet.add(name);
+    const r1 = R1[name] ?? null;
+    const toPar = r1 !== null ? scoreToPar(r1) : null;
+    const country = COUNTRIES[name] || "US";
+    const entry = mastersLB.find(e => e.name === name);
+    const posStr = entry ? entry.posStr : "—";
+    return { name, r1, toPar, country, posStr };
+  });
+  const sorted = [...players].sort((a, b) => {
+    if (a.r1 === null && b.r1 === null) return 0;
+    if (a.r1 === null) return 1; if (b.r1 === null) return -1;
+    return a.r1 - b.r1;
+  });
+  const counting = sorted.slice(0, 4);
+  const dropped = sorted.slice(4);
+  const best4Total = counting.reduce((s, p) => s + (p.r1 ?? MC_PENALTY/4), 0);
+  const best4ToPar = best4Total - (PAR * 4);
+  const all6Total = sorted.reduce((s, p) => s + (p.r1 ?? MC_PENALTY/4), 0);
+  const projTotal = counting.reduce((sum, p) => {
+    const mean4 = PROJ_MEAN[p.name] || 293;
+    const perRound = mean4 / 4;
+    return sum + (p.r1 || 73) + perRound * 3;
+  }, 0);
+
+  // Archetype tags
+  const livCount = sorted.filter(p => LIV_PLAYERS.has(p.name)).length;
+  const champCount = sorted.filter(p => PAST_CHAMPS[p.name] !== undefined && PAST_CHAMPS[p.name] !== "").length;
+  const heroCount = sorted.filter(p => AUGUSTA_HEROES.has(p.name)).length;
+
+  return {
+    owner: raw.owner, team: raw.team || raw.owner,
+    players: sorted, counting, dropped,
+    best4Total, best4ToPar, all6Total,
+    projTotal: Math.round(projTotal * 10) / 10,
+    livCount, champCount, heroCount
+  };
+});
+TEAMS.sort((a, b) => a.best4Total - b.best4Total || a.all6Total - b.all6Total);
+let teamPos = 1;
+for (let i = 0; i < TEAMS.length; i++) {
+  if (i > 0 && TEAMS[i].best4Total > TEAMS[i-1].best4Total) teamPos = i + 1;
+  TEAMS[i].pos = teamPos;
+}
+
+// ─── Analytics ───────────────────────────────────────────────
+// Pick counts
+const pickCounts = {};
+TEAMS.forEach(t => t.players.forEach(p => { pickCounts[p.name] = (pickCounts[p.name] || 0) + 1; }));
+
+// LIV vs PGA in pool
+const livPoolScores = [];
+const pgaPoolScores = [];
+poolPlayerSet.forEach(name => {
+  const r1 = R1[name];
+  if (r1 == null) return;
+  if (LIV_PLAYERS.has(name)) livPoolScores.push(r1); else pgaPoolScores.push(r1);
+});
+
+// Past champions performance
+const champScores = Object.keys(PAST_CHAMPS)
+  .filter(n => PAST_CHAMPS[n] && R1[n] != null)
+  .map(n => ({ name: n, score: R1[n], years: PAST_CHAMPS[n] }));
+champScores.sort((a, b) => a.score - b.score);
+
+// Augusta heroes performance
+const heroScores = [...AUGUSTA_HEROES].filter(n => R1[n] != null)
+  .map(n => ({ name: n, score: R1[n] }));
+heroScores.sort((a, b) => a.score - b.score);
+
+// Teams with most LIV exposure
+const livTeams = [...TEAMS].sort((a, b) => b.livCount - a.livCount);
+
+// Chalk vs contrarian: top 6 most-picked players
+const chalkNames = Object.entries(pickCounts).sort((a,b) => b[1]-a[1]).slice(0,6).map(e => e[0]);
+const chalkSet = new Set(chalkNames);
+
+// ─── Broadcast summary ──────────────────────────────────────
+function broadcastHTML() {
+  const leader = mastersLB[0];
+  const topPoolScorer = [...poolPlayerSet].filter(n => R1[n]).sort((a,b) => R1[a] - R1[b])[0];
+  const worstPoolScorer = [...poolPlayerSet].filter(n => R1[n]).sort((a,b) => R1[b] - R1[a])[0];
+  const mostPicked = Object.entries(pickCounts).sort((a,b) => b[1]-a[1])[0];
+  const livAvg = avg(livPoolScores).toFixed(1);
+  const pgaAvg = avg(pgaPoolScores).toFixed(1);
+  const burnsPicked = pickCounts["Sam Burns"] || 0;
+  const reedPicked = pickCounts["Patrick Reed"] || 0;
+
+  return `<div class="broadcast">
+    <h2>📺 The Thursday Broadcast — Round 1 Wrap</h2>
+    <p><em>"Good evening from Augusta National, where the azaleas are blooming and the leaderboard is absolutely stacked. What a Thursday, folks."</em></p>
+
+    <p>The defending champion <strong>Rory McIlroy</strong> marched back into Augusta like he owned the place — because, well, he does own a green jacket — and fired a ${formatPar(R1["Rory McIlroy"]-PAR)} <strong>67</strong> to share the lead with the red-hot <strong>Sam Burns</strong>. Six birdies against one bogey. Vintage Rory. The question is: how many of you had the defending champ? <span class="callout">${pickCounts["Rory McIlroy"] || 0} of 27 teams</span></p>
+
+    <p>Meanwhile, ${burnsPicked === 0 ? "literally nobody" : "only " + burnsPicked + " team" + (burnsPicked > 1 ? "s" : "")} picked Sam Burns, who is co-leading the Masters. ${burnsPicked === 0 ? '<span class="red">Zero. Teams.</span> That\'s the contrarian special right there.' : "Talk about a sneaky pick."} Burns birdied three of his last five holes to surge up the board.</p>
+
+    <p>The big story for your pool? <strong>Scottie Scheffler</strong> — picked by a staggering <span class="callout">${pickCounts["Scottie Scheffler"]}/27 teams</span> — eagled No. 2 and drove the green on the par-4 3rd. Then... nothing. Not a single birdie over his final 15 holes. He's at -2, which is fine, but it's the kind of "fine" that keeps pool managers up at night.</p>
+
+    <div class="quote">"The course was firm, fast and extremely demanding." — Rory McIlroy</div>
+
+    <p>Now for the carnage. <strong>Jon Rahm</strong> — picked by <span class="callout">${pickCounts["Jon Rahm"]}/27 teams</span> — turned in <span class="red">4-over 40</span> on his first nine, missing short putt after short putt. He limped home at <span class="red">+6 (78)</span>. Bryson DeChambeau wasn't much better at <span class="red">+4 (76)</span>. The two most popular LIV players in this pool just handed their teams a combined +10 in dead weight.</p>
+
+    <p>Speaking of LIV: the tour averaged <strong>${livAvg}</strong> today vs the PGA Tour's <strong>${pgaAvg}</strong> among pool players. ${parseFloat(livAvg) > parseFloat(pgaAvg) ? '<span class="red">The rust is real.</span> Competition sharpness matters at Augusta.' : '<span class="green">LIV held their own today.</span>'} The one bright spot from the breakaway league? <strong>Patrick Reed</strong> — Captain America himself — fired a <span class="green">-3 (69)</span>. ${reedPicked <= 3 ? "And almost nobody saw it coming." : ""}</p>
+
+    <p>The <strong>Augusta heroes</strong> — guys who just know this course — showed up. Justin Rose (-2), Shane Lowry (-2), and Jason Day (-3) all clicked into that course-knowledge gear. The green jacket isn't just about talent; it's about knowing which side of the 13th fairway to miss on.</p>
+
+    <p>Three teams are tied for first at <span class="green">-10</span> after best-4-of-6 scoring. It's tight at the top — just 3 strokes separate 1st from 10th. <strong>This pool is far from over.</strong></p>
+
+    <p><em>"Back to you, Jim. We'll see everyone on Friday for moving day's little brother."</em></p>
+  </div>`;
+}
+
+// ─── Render ──────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app");
+  let html = "";
+
+  // Prize banner
+  html += `<div class="prize-banner">
+    <div class="prize-card first"><div class="place">1st Place</div><div class="amount">567 🐚</div><div class="pct">70% of 810 clams</div></div>
+    <div class="prize-card"><div class="place">2nd Place</div><div class="amount">162 🐚</div><div class="pct">20% of 810 clams</div></div>
+    <div class="prize-card"><div class="place">3rd Place</div><div class="amount">81 🐚</div><div class="pct">10% of 810 clams</div></div>
+  </div>`;
+
+  // Round status
+  html += `<div class="round-status">
+    <div class="round-label">Round 1 Complete</div>
+    <div class="round-info">Thursday, April 9 — Firm & fast conditions</div>
+    <div class="round-dots">
+      <div class="round-dot done">R1</div><div class="round-dot">R2</div>
+      <div class="round-dot">R3</div><div class="round-dot">R4</div>
+    </div>
+  </div>`;
+
+  // Broadcast summary
+  html += broadcastHTML();
+
+  // ─── Insight cards ─────────────────────────────────────────
+  html += `<div class="insight-grid">`;
+
+  // LIV vs PGA
+  const livAvg = avg(livPoolScores).toFixed(1);
+  const pgaAvg = avg(pgaPoolScores).toFixed(1);
+  const livWin = parseFloat(livAvg) < parseFloat(pgaAvg);
+  html += `<div class="insight-card">
+    <h3>🏴‍☠️ LIV vs PGA — Pool Players</h3>
+    <div class="vs-grid">
+      <div class="vs-side">
+        <div class="vs-label" style="color:var(--liv)">LIV Golf</div>
+        <div class="vs-score ${livWin ? 'good' : 'bad'}">${livAvg}</div>
+        <div class="vs-detail">${livPoolScores.length} players in pool</div>
+      </div>
+      <div class="vs-divider">vs</div>
+      <div class="vs-side">
+        <div class="vs-label" style="color:var(--pga)">PGA Tour</div>
+        <div class="vs-score ${!livWin ? 'good' : 'bad'}">${pgaAvg}</div>
+        <div class="vs-detail">${pgaPoolScores.length} players in pool</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--muted)">
+      ${livWin ? "LIV wins Round 1... somehow" : "PGA Tour's competitive edge shows"}
+    </div>
+  </div>`;
+
+  // Past Champions
+  html += `<div class="insight-card">
+    <h3>🏆 Past Masters Champions</h3>`;
+  champScores.forEach(c => {
+    const tp = scoreToPar(c.score);
+    html += `<div class="stat-row">
+      <span class="stat-label">${flagFor(COUNTRIES[c.name]||"US")} ${c.name} <span style="font-size:10px;opacity:0.6">(${c.years})</span></span>
+      <span class="stat-val ${parClass(tp)}">${formatPar(tp)}</span>
+    </div>`;
+  });
+  const champAvg = avg(champScores.map(c => c.score)).toFixed(1);
+  html += `<div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">
+    Champions avg: <strong style="color:var(--cream)">${champAvg}</strong> · They know where the pins are
+  </div></div>`;
+
+  // Augusta Heroes
+  html += `<div class="insight-card">
+    <h3>⛳ Augusta Course-Fit Heroes</h3>`;
+  heroScores.slice(0, 8).forEach(h => {
+    const tp = scoreToPar(h.score);
+    html += `<div class="stat-row">
+      <span class="stat-label">${flagFor(COUNTRIES[h.name]||"US")} ${h.name}</span>
+      <span class="stat-val ${parClass(tp)}">${formatPar(tp)}</span>
+    </div>`;
+  });
+  const heroAvg = avg(heroScores.map(h => h.score)).toFixed(1);
+  html += `<div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">
+    Course-fit avg: <strong style="color:var(--cream)">${heroAvg}</strong> · Augusta rewards those who've learned her secrets
+  </div></div>`;
+
+  // LIV Exposure by Team
+  html += `<div class="insight-card">
+    <h3>🏴‍☠️ LIV Exposure — Team Rankings</h3>`;
+  const livRanked = [...TEAMS].sort((a,b) => b.livCount - a.livCount || a.best4Total - b.best4Total);
+  livRanked.slice(0, 8).forEach(t => {
+    const livScores = t.players.filter(p => LIV_PLAYERS.has(p.name)).map(p => p.r1).filter(Boolean);
+    const livSum = livScores.length ? formatPar(livScores.reduce((a,b) => a+b, 0) - livScores.length * PAR) : "—";
+    html += `<div class="stat-row">
+      <span class="stat-label">${t.team} <span style="font-size:10px;opacity:0.6">(${t.livCount} LIV)</span></span>
+      <span class="stat-val ${t.livCount >= 3 ? 'bad' : ''}">${livSum}</span>
+    </div>`;
+  });
+  html += `<div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center">
+    Heavy LIV exposure = high variance gamble today
+  </div></div>`;
+
+  html += `</div>`; // end insight-grid
+
+  // ─── Most-Picked Players Bar Chart ─────────────────────────
+  html += `<div class="card">
+    <h2>📊 Most-Picked Players — Did the Crowd Get It Right?</h2>
+    <div class="bar-chart">`;
+  const sortedPicks = Object.entries(pickCounts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+  const maxPicks = sortedPicks[0][1];
+  sortedPicks.forEach(([name, count]) => {
+    const r1 = R1[name];
+    const tp = r1 ? scoreToPar(r1) : null;
+    const pStr = tp !== null ? formatPar(tp) : "—";
+    const pCls = tp !== null ? parClass(tp) : "even";
+    const pct = Math.round(count / maxPicks * 100);
+    const barColor = tp !== null && tp <= 0 ? "var(--birdie)" : tp !== null && tp <= 2 ? "var(--bogey)" : "var(--bad)";
+    html += `<div class="bar-row">
+      <div class="bar-label">${flagFor(COUNTRIES[name]||"US")} ${name}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+      <div class="bar-val ${pCls}">${count}/27 ${pStr}</div>
+    </div>`;
+  });
+  html += `</div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted)">
+      Bar = pick count · Score color = R1 performance · Green = under par, gold = +1/+2, red = +3 or worse
+    </div>
+  </div>`;
+
+  // ─── Pool Rules ────────────────────────────────────────────
+  html += `<div class="card">
+    <h2>Pool Rules</h2>
+    <div class="rules-card">
+      <div class="rule-item"><div class="rule-label">Format</div>Best 4 of 6 scores count</div>
+      <div class="rule-item"><div class="rule-label">Max Score</div>Player max = 36-hole cut line</div>
+      <div class="rule-item"><div class="rule-label">Tiebreaker</div>All 6 scores, then Rock Paper Scissors</div>
+      <div class="rule-item"><div class="rule-label">Payouts</div>27 × 30 = 810 clams 🐚</div>
+    </div>
+  </div>`;
+
+  // ─── Team Leaderboard ──────────────────────────────────────
+  html += `<div class="card"><h2>Pool Leaderboard</h2></div>`;
+  html += `<div class="leaderboard" style="margin-top:8px">`;
+  TEAMS.forEach((t, i) => {
+    const parStr = formatPar(t.best4ToPar);
+    const cls = parClass(t.best4ToPar);
+    const isFirst = t.pos === 1;
+    const posLabel = t.pos <= 3 ? ["🥇","🥈","🥉"][t.pos - 1] : t.pos;
+
+    // Build badges
+    let badges = "";
+    if (t.livCount >= 3) badges += `<span class="team-badge" style="background:rgba(232,168,152,0.2);color:var(--liv)">🏴‍☠️ ${t.livCount} LIV</span>`;
+    if (t.champCount >= 3) badges += `<span class="team-badge" style="background:rgba(212,168,71,0.2);color:var(--gold)">🏆 ${t.champCount} Champs</span>`;
+    if (t.heroCount >= 3) badges += `<span class="team-badge" style="background:rgba(42,143,80,0.2);color:var(--pga)">⛳ ${t.heroCount} Heroes</span>`;
+
+    // Chalk score: how many of top-6 most picked
+    const chalkCount = t.players.filter(p => chalkSet.has(p.name)).length;
+    if (chalkCount >= 5) badges += `<span class="team-badge" style="background:rgba(255,255,255,0.08);color:var(--muted)">📋 Chalk</span>`;
+    if (chalkCount <= 2) badges += `<span class="team-badge" style="background:rgba(255,255,255,0.08);color:var(--muted)">🎲 Contrarian</span>`;
+
+    html += `<div class="team-row${isFirst ? " first-place" : ""}" onclick="toggleTeam(this)">
+      <div class="team-header">
+        <div class="team-pos${t.pos <= 3 ? " top3" : ""}">${posLabel}</div>
+        <div class="team-info">
+          <div class="team-name">${t.team}${badges}</div>
+          <div class="team-owner">${t.owner}</div>
+        </div>
+        <div>
+          <div class="team-score ${cls}">${parStr}</div>
+          <div class="team-total-strokes">${t.best4Total} strokes</div>
+        </div>
+        <div class="team-proj">Proj 72h<br><span class="proj-val">${t.projTotal}</span></div>
+      </div>
+      <div class="team-detail">
+        <div class="counting-label">Counting (best 4)</div>
+        <div class="player-grid">`;
+    t.counting.forEach(p => {
+      const pPar = p.toPar !== null ? formatPar(p.toPar) : "—";
+      const pCls = p.toPar !== null ? parClass(p.toPar) : "even";
+      html += `<div class="player-line counting">
+        <div class="player-flag">${flagFor(p.country)}</div>
+        <div class="player-name">${p.name}${tourChip(p.name)}</div>
+        <div class="player-pos">${p.posStr}</div>
+        <div class="player-r1">${p.r1 ?? "—"}</div>
+        <div class="player-par ${pCls}">${pPar}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    if (t.dropped.length) {
+      html += `<div class="dropped-label">Dropped (worst 2)</div><div class="player-grid">`;
+      t.dropped.forEach(p => {
+        const pPar = p.toPar !== null ? formatPar(p.toPar) : "—";
+        const pCls = p.toPar !== null ? parClass(p.toPar) : "even";
+        html += `<div class="player-line dropped">
+          <div class="player-flag">${flagFor(p.country)}</div>
+          <div class="player-name">${p.name}${tourChip(p.name)}</div>
+          <div class="player-pos">${p.posStr}</div>
+          <div class="player-r1">${p.r1 ?? "—"}</div>
+          <div class="player-par ${pCls}">${pPar}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+
+  // ─── Separation Analysis ───────────────────────────────────
+  html += `<div class="card">
+    <h2>📐 How Tight Is It?</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:8px">`;
+  const scores = TEAMS.map(t => t.best4Total);
+  const spread = scores[scores.length-1] - scores[0];
+  const top10spread = scores[Math.min(9, scores.length-1)] - scores[0];
+  const uniqueScores = new Set(scores).size;
+  html += `<div style="background:var(--card2);border-radius:6px;padding:12px;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:var(--gold)">${spread}</div>
+    <div style="font-size:11px;color:var(--muted)">strokes 1st → last</div>
+  </div>`;
+  html += `<div style="background:var(--card2);border-radius:6px;padding:12px;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:var(--gold)">${top10spread}</div>
+    <div style="font-size:11px;color:var(--muted)">strokes 1st → 10th</div>
+  </div>`;
+  html += `<div style="background:var(--card2);border-radius:6px;padding:12px;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:var(--gold)">${uniqueScores}</div>
+    <div style="font-size:11px;color:var(--muted)">unique team scores</div>
+  </div>`;
+  html += `<div style="background:var(--card2);border-radius:6px;padding:12px;text-align:center">
+    <div style="font-size:24px;font-weight:700;color:var(--gold)">${TEAMS.filter(t=>t.pos===1).length}</div>
+    <div style="font-size:11px;color:var(--muted)">teams tied for 1st</div>
+  </div>`;
+  html += `</div></div>`;
+
+  // ─── Masters Tournament Leaderboard ────────────────────────
+  html += `<div class="card">
+    <h2>Masters Tournament Leaderboard — Round 1</h2>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">• = picked by at least one pool team</div>
+    <div class="masters-lb"><table>
+      <thead><tr><th>Pos</th><th>Player</th><th></th><th class="num">R1</th><th class="num">To Par</th></tr></thead>
+      <tbody>`;
+  mastersLB.forEach(e => {
+    const inPool = poolPlayerSet.has(e.name);
+    const flag = flagFor(COUNTRIES[e.name] || "US");
+    const pCls = parClass(e.toPar);
+    html += `<tr class="${inPool ? "pool-player" : ""}">
+      <td>${e.posStr}</td>
+      <td>${flag} ${e.name}${tourChip(e.name)}${inPool ? " •" : ""}</td>
+      <td></td>
+      <td class="num">${e.score}</td>
+      <td class="num ${pCls}" style="font-weight:600">${formatPar(e.toPar)}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div></div>`;
+
+  // Footer
+  html += `<div class="footer">
+    2026 Masters Pool · <a href="index.html">Open Predictor</a><br>
+    Scores via ESPN · Updated after Round 1
+  </div>`;
+
+  app.innerHTML = html;
+}
+
+function toggleTeam(el) { el.classList.toggle("expanded"); }
+render();
+</script>
+</body>
+</html>
