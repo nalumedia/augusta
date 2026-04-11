@@ -142,7 +142,7 @@
 <body>
 <header>
   <h1><span class="live-dot"></span> 2026 Masters Pool — Live Results</h1>
-  <div class="subtitle">26 Teams · 780 Clams 🐚 · Best 4 of 6 · Round 2 In Progress</div>
+  <div class="subtitle">26 Teams · 780 Clams 🐚 · Best 4 of 6 · Round 2 Complete — Cut Day</div>
   <a class="nav-link" href="index.html">← Back to Predictor Tool</a>
 </header>
 <div class="container" id="app"></div>
@@ -162,60 +162,44 @@ const R1 = {
   "Adam Scott":72,"Sergio Garcia":72,"Michael Brennan":72,"Chris Gotterup":72,
   "Jordan Spieth":72,"Brooks Koepka":72,"Justin Thomas":72,"Ben Griffin":72,
   "Jake Knapp":73,"Dustin Johnson":73,"Akshay Bhatia":73,"Russell Henley":73,
-  "Cameron Young":73,"Sepp Straka":73,"Harris English":73,"Patrick Cantlay":73,
+  "Cameron Young":73,"Sepp Straka":73,"Harris English":73,"Patrick Cantlay":77,
   "Jose Maria Olazabal":74,"Cameron Smith":74,"Matt Fitzpatrick":74,
   "Collin Morikawa":74,"Tyrrell Hatton":74,"J.J. Spaun":74,"Ludvig Aberg":74,
-  "Ethan Fang":74,"Min Woo Lee":75,"Si Woo Kim":75,"Robert MacIntyre":77,
-  "Marco Penge":77,"Bryson DeChambeau":76,"Jon Rahm":78,"Bubba Watson":76,
-  "Viktor Hovland":75,"Daniel Berger":76,"Tom McKibbin":75,
-  "Davis Riley":76,"Aldrich Potgieter":78,"Fred Couples":78
+  "Ethan Fang":74,"Si Woo Kim":75,"Viktor Hovland":75,"Tom McKibbin":75,
+  "Bryson DeChambeau":76,"Bubba Watson":76,"Marco Penge":76,"Daniel Berger":76,
+  "Davis Riley":82,"Min Woo Lee":78,"Jon Rahm":78,"Fred Couples":78,
+  "Robert MacIntyre":80,"Aldrich Potgieter":84
 };
 
-// R2 scores: null = still on course / unknown
+// R2 scores — FINAL (confirmed via ESPN)
 const R2 = {
-  "Justin Rose":69,"Tyrrell Hatton":66,"Wyndham Clark":68,"Haotong Li":69,
-  "Brooks Koepka":69,"Chris Gotterup":69,"Ben Griffin":69,"Scottie Scheffler":74,
-  "Jon Rahm":70,
-  // In-progress estimates based on current pace (update these!)
-  "Rory McIlroy":67,  // -7 thru 7, projecting ~67
-  "Patrick Reed":68,   // -5 thru 9
-  "Sam Burns":73,      // -4 thru 12, +1 today
-  "Jason Day":67,      // -5 thru 11
-  "Tommy Fleetwood":69,// -4 thru 10
-  "Kristoffer Reitan":68,// -4 thru 14
-  "Xander Schauffele":71,// -3 thru 9
-  "Shane Lowry":71,    // -3 thru 10
-  "Jordan Spieth":71,  // -1 thru turn
-  "Kurt Kitayama":73,  // ~E pace
-  "Ludvig Aberg":72,   // +2 on week, near cut
-  "Cameron Young":72,
-  "Collin Morikawa":72,
-  "Matt Fitzpatrick":72,
-  "Hideki Matsuyama":71,
-  "Akshay Bhatia":72,
-  "Russell Henley":72,
-  "Gary Woodland":73,
-  "Bryson DeChambeau":72, // +4, thru 5 at -4 pace
-  "Si Woo Kim":74,
-  "Min Woo Lee":74,
-  "Robert MacIntyre":73,
-  "Marco Penge":75,
-  "Ryan Gerard":73,
-  "J.J. Spaun":74,
-  "Dustin Johnson":73,
-  "Cameron Smith":73,
-  "Adam Scott":72,
-  "Sergio Garcia":73,
-  "Nick Taylor":73,
-  "Aaron Rai":72,
-  "Bubba Watson":76,
-  "Max Homa":73,
-  "Patrick Cantlay":72
+  "Rory McIlroy":65,"Tyrrell Hatton":66,"Patrick Cantlay":67,
+  "Cameron Young":67,"Tommy Fleetwood":68,"Wyndham Clark":68,"Kristoffer Reitan":68,
+  "Shane Lowry":69,"Justin Rose":69,"Haotong Li":69,"Patrick Reed":69,
+  "Chris Gotterup":69,"Brooks Koepka":69,"Ben Griffin":69,"Jake Knapp":69,
+  "Matt Fitzpatrick":69,"Collin Morikawa":69,"Marco Penge":69,
+  "Max Homa":70,"Hideki Matsuyama":70,"Ludvig Aberg":70,"Jon Rahm":70,
+  "Sam Burns":71,"Jason Day":71,"Michael Brennan":71,"Harris English":71,
+  "Dustin Johnson":71,"Russell Henley":71,"Viktor Hovland":71,"Robert MacIntyre":71,
+  "Xander Schauffele":72,"Nick Taylor":72,"Ryan Gerard":72,"Sepp Straka":72,
+  "Brian Campbell":73,"Jordan Spieth":73,"Matt McCarty":73,"Si Woo Kim":73,
+  "Bubba Watson":73,"Kurt Kitayama":79,
+  "Scottie Scheffler":74,"Aaron Rai":74,"Jacob Bridgeman":74,"Sam Stevens":74,
+  "Adam Scott":74,"Justin Thomas":74,"Keegan Bradley":74,"Bryson DeChambeau":74,
+  "Gary Woodland":75,"Sergio Garcia":75,"J.J. Spaun":75,"Fred Couples":75,
+  "Aldrich Potgieter":75,
+  "Tom McKibbin":76,"Daniel Berger":76,
+  "Cameron Smith":77,"Akshay Bhatia":77,"Min Woo Lee":77,
+  "Ethan Fang":78,"Jose Maria Olazabal":79,"Davis Riley":80
 };
 
 const PAR = 72;
-const LAST_UPDATED = "Fri Apr 10, ~4:00 PM ET";
-const R2_STATUS = "in_progress"; // "in_progress" or "complete"
+const CUT_LINE = 148; // +4, confirmed
+const MC = new Set(["Bryson DeChambeau","Akshay Bhatia","Robert MacIntyre","Min Woo Lee",
+  "J.J. Spaun","Bubba Watson","Cameron Smith","Tom McKibbin","Daniel Berger",
+  "Ethan Fang","Fred Couples","Jose Maria Olazabal","Davis Riley","Aldrich Potgieter"]);
+const LAST_UPDATED = "Fri Apr 10, 8:30 PM ET";
+const R2_STATUS = "complete";
 
 // ─── Countries / Tours / Tags ─────────────────────────────────
 const COUNTRIES={"Scottie Scheffler":"US","Jon Rahm":"ES","Bryson DeChambeau":"US","Rory McIlroy":"GB","Ludvig Aberg":"SE","Xander Schauffele":"US","Cameron Young":"US","Tommy Fleetwood":"GB","Matt Fitzpatrick":"GB","Hideki Matsuyama":"JP","Collin Morikawa":"US","Min Woo Lee":"AU","Robert MacIntyre":"GB","Justin Rose":"GB","Brooks Koepka":"US","Jordan Spieth":"US","Patrick Reed":"US","Chris Gotterup":"US","Viktor Hovland":"NO","Si Woo Kim":"KR","Akshay Bhatia":"US","Russell Henley":"US","Justin Thomas":"US","Adam Scott":"AU","Patrick Cantlay":"US","Jake Knapp":"US","Shane Lowry":"IE","Jason Day":"AU","J.J. Spaun":"US","Sam Burns":"US","Gary Woodland":"US","Marco Penge":"GB","Ryan Gerard":"US","Cameron Smith":"AU","Dustin Johnson":"US","Harris English":"US","Kurt Kitayama":"US","Sergio Garcia":"ES","Bubba Watson":"US","Fred Couples":"US","Haotong Li":"CN","Ben Griffin":"US","Max Homa":"US","Keegan Bradley":"US","Tyrrell Hatton":"GB","Sepp Straka":"AT","Wyndham Clark":"US","Nick Taylor":"CA","Aaron Rai":"GB","Brian Campbell":"US","Michael Brennan":"US","Jacob Bridgeman":"US","Matt McCarty":"US","Kristoffer Reitan":"NO","Sam Stevens":"US"};
@@ -268,10 +252,14 @@ function avg(a){return a.reduce((s,v)=>s+v,0)/a.length}
 function playerTotal(name){
   const r1=R1[name]??null, r2=R2[name]??null;
   if(r1==null)return null;
-  if(r2==null)return r1; // only R1
-  return r1+r2;
+  if(r2==null)return r1;
+  const raw=r1+r2;
+  // Pool rule: MC players capped at cut line
+  if(MC.has(name)&&raw>CUT_LINE)return CUT_LINE;
+  return raw;
 }
 function playerRounds(name){return{r1:R1[name]??null,r2:R2[name]??null}}
+function isMC(name){return MC.has(name)}
 function totalToPar(name){const t=playerTotal(name);return t==null?null:t-(R2[name]!=null?PAR*2:PAR)}
 
 // Masters LB using best available data
@@ -279,9 +267,11 @@ const allPlayers=new Set([...Object.keys(R1),...Object.keys(R2)]);
 const mastersLB=[...allPlayers].map(name=>{
   const r1=R1[name]??null,r2=R2[name]??null;
   const rounds=r2!=null?2:r1!=null?1:0;
-  const total=(r1||0)+(r2||0);
+  const rawTotal=(r1||0)+(r2||0);
+  const mc=MC.has(name);
+  const total=mc&&rawTotal>CUT_LINE?CUT_LINE:rawTotal;
   const toPar=total-PAR*rounds;
-  return{name,r1,r2,total,toPar,rounds};
+  return{name,r1,r2,total,toPar,rounds,mc};
 }).filter(e=>e.rounds>0).sort((a,b)=>a.toPar-b.toPar||a.total-b.total);
 
 let mPos=1;
@@ -310,14 +300,16 @@ function buildTeams(){
       poolPlayerSet.add(name);
       const r1=R1[name]??null,r2=R2[name]??null;
       const rounds=r2!=null?2:r1!=null?1:0;
-      const total=(r1||0)+(r2||0);
+      const rawTotal=(r1||0)+(r2||0);
+      const mc=MC.has(name);
+      const total=mc&&rawTotal>CUT_LINE?CUT_LINE:rawTotal;
       const toPar=rounds>0?total-PAR*rounds:null;
       const country=COUNTRIES[name]||"US";
       const entry=mastersLB.find(e=>e.name===name);
       const posStr=entry?entry.posStr:"—";
       const r1pos=r1PosMap[name]||99;
       const curPos=entry?entry.pos:99;
-      return{name,r1,r2,total,toPar,country,posStr,r1pos,curPos,rounds};
+      return{name,r1,r2,total,toPar,country,posStr,r1pos,curPos,rounds,mc};
     });
     const sorted=[...players].sort((a,b)=>{
       if(a.total===0&&b.total===0)return 0;if(a.total===0)return 1;if(b.total===0)return -1;
@@ -388,24 +380,30 @@ function render(){
 
   // Broadcast
   h+=`<div class="broadcast">
-    <h2>📺 The Nantzbot Friday Update</h2>
-    <p><em>"Hello friends. Welcome back to Augusta National for what is shaping up to be a Friday for the ages."</em></p>
+    <h2>📺 The Nantzbot — Friday Night Wrap</h2>
+    <p><em>"Hello friends. What a Friday at Augusta National. What. A. Friday. The cut has fallen, the field has been sliced in half, and one man stands six shots clear of everyone else on the planet."</em></p>
 
-    <p>The defending champion <strong>Rory McIlroy</strong> has taken sole possession of the lead at <span class="green">7-under</span>. A par-birdie-birdie start to his Friday had the patrons roaring through the Georgia pines. <em>This is a man who knows exactly where he left his green jacket.</em></p>
+    <p><strong>Rory McIlroy</strong> fired a <span class="green">65</span> — seven birdies, zero bogeys — to reach <span class="callout">-12</span> and open up a <strong>six-shot lead</strong> at the halfway point. The defending champion hasn't just found form, he's found another gear entirely. <em>A tradition unlike any other: Rory McIlroy looking unbeatable at Augusta.</em></p>
 
-    <p><strong>Justin Rose</strong> — the ageless Augusta whisperer — posted a tidy 69 to reach <span class="green">-5</span> and is already in the clubhouse. <strong>Patrick Reed</strong> is matching that number with Captain America finding that gear he only seems to have in April. <em>A tradition unlike any other: Patrick Reed at Augusta.</em></p>
+    <div class="quote">"In 89 editions of the Masters, no one has ever held a six-shot lead at the halfway mark. Until tonight."</div>
 
-    <p>The surprise of the day? <strong>Tyrrell Hatton</strong> — yes, the LIV man — fired a <span class="green">66</span> to rocket from +2 to -4. The English bulldog just reminded everyone that talent doesn't rust, it just changes zip codes.</p>
+    <p>Tied for second at <span class="green">-6</span>, <strong>Patrick Reed</strong> — Captain America himself — and <strong>Sam Burns</strong> are the closest pursuers. Reed backed up his opening 69 with another 69. The man just comes alive in April. Burns birdied three of his last five to salvage a 71 after a shaky front nine.</p>
 
-    <p>Meanwhile, <strong>Scottie Scheffler</strong> carded a disappointing <span class="red">+2 (74)</span>, dropping to even par. The world No. 1 put his approach into Rae's Creek on a par 5. Seven shots back. The patrons are restless. <em>Sometimes even the king must chase.</em></p>
+    <p>The <strong>move of the day</strong> belongs to <strong>Tyrrell Hatton</strong> 🏴‍☠️ — the LIV man fired a scorching <span class="green">66</span> to rocket from <span class="red">+2</span> to <span class="green">-4</span>. Eight birdies. Eight. The English bulldog reminded everyone that Augusta doesn't care about your tour affiliation. Similarly, <strong>Cameron Young</strong> carded a <span class="green">67</span> to leap from +1 to -4. <em>Moving day came a day early for these two.</em></p>
 
-    <p>For those of you still carrying <strong>Jon Rahm</strong>: he steadied the ship today with a 70, but at <span class="red">+4</span> he's flirting with the cut line. <strong>Bryson DeChambeau</strong> is in the same neighborhood. The LIV contingent's marquee names are sweating on a Friday at Augusta — not exactly the script they wrote.</p>
+    <p><strong>Patrick Cantlay</strong> deserves a quiet standing ovation: after an ugly opening <span class="red">77</span>, he responded with a <span class="green">67</span> to claw back to even par. Ten-shot swing in 18 holes. That's Augusta — she gives you a chance to redeem yourself.</p>
 
-    <div class="quote">"The cut line is projected around +4. Several household names are staring it right in the face."</div>
+    <p>And then there's the other side. <strong>Scottie Scheffler</strong> posted a <span class="red">74</span> and sits at even par, <em>twelve shots back</em>. The world No. 1 will need something historic over the weekend. <strong>Kurt Kitayama</strong> — who was <span class="green">-3</span> after a brilliant opening 69 — collapsed with a <span class="red">79</span> to fall to +4, right on the cut line. The Georgia pines giveth and taketh away.</p>
 
-    <p>At the top of your pool leaderboard, things have <strong>shifted dramatically</strong>. Teams heavy on Rose, Fleetwood, and the course-fit veterans are surging. Teams that went all-in on the favorites? They're watching Scheffler and Rahm drag their counting scores into uncomfortable territory.</p>
+    <div class="quote">"The cut fell at +4. One hundred and forty-eight strokes. And it claimed some very big names."</div>
 
-    <p><em>"We'll be right back after this message from the azaleas. Don't touch that dial."</em></p>
+    <p><strong>Bryson DeChambeau</strong> 🏴‍☠️ is <span class="red">gone</span>. The self-proclaimed scientist couldn't solve Augusta's equation this week — 76-74 and out at +6. <strong>Akshay Bhatia</strong>, <strong>Bubba Watson</strong>, <strong>Cameron Smith</strong>, and <strong>J.J. Spaun</strong> — all missed the cut. For pool managers who loaded up on DeChambeau (and many of you did), his score is capped at the cut line per pool rules. Small mercies.</p>
+
+    <p><strong>Jon Rahm</strong> 🏴‍☠️ survived — <em>barely</em>. A 70 today kept him right on the +4 line. He'll be here for the weekend, but twelve shots back of McIlroy, it would take the greatest weekend in Masters history. <em>Then again, this is Augusta. Stranger things have happened.</em></p>
+
+    <p>For your <strong>pool leaderboard</strong>: teams heavy on McIlroy, Reed, Burns, and Rose are soaring. Teams that went all-in on the big LIV names? They're feeling the sting of the cut. The separation at the top is real — but with 36 holes to go, that green jacket hasn't been fitted yet.</p>
+
+    <p><em>"From the tower behind the 18th green, under a pink Georgia sky... don't you dare touch that dial. The weekend at the Masters starts tomorrow. See you on the first tee."</em></p>
   </div>`;
 
   // Insights
@@ -544,9 +542,10 @@ function render(){
     t.counting.forEach(p=>{
       const pPar=p.toPar!=null?fmtPar(p.toPar):"—";
       const pCl=p.toPar!=null?parCls(p.toPar):"even";
+      const mcTag=p.mc?` <span style="font-size:10px;color:var(--bad);font-weight:600">MC</span>`:"";
       h+=`<div class="player-line counting">
         <div class="player-flag">${flagFor(p.country)}</div>
-        <div class="player-name">${p.name}${tourChip(p.name)}</div>
+        <div class="player-name">${p.name}${tourChip(p.name)}${mcTag}</div>
         <div class="player-r">${p.r1??"—"}</div>
         <div class="player-r">${p.r2??"—"}</div>
         <div class="player-par ${pCl}">${pPar}</div>
@@ -558,9 +557,10 @@ function render(){
       t.dropped.forEach(p=>{
         const pPar=p.toPar!=null?fmtPar(p.toPar):"—";
         const pCl=p.toPar!=null?parCls(p.toPar):"even";
+        const mcTag=p.mc?` <span style="font-size:10px;color:var(--bad);font-weight:600">MC</span>`:"";
         h+=`<div class="player-line dropped">
           <div class="player-flag">${flagFor(p.country)}</div>
-          <div class="player-name">${p.name}${tourChip(p.name)}</div>
+          <div class="player-name">${p.name}${tourChip(p.name)}${mcTag}</div>
           <div class="player-r">${p.r1??"—"}</div>
           <div class="player-r">${p.r2??"—"}</div>
           <div class="player-par ${pCl}">${pPar}</div>
@@ -589,7 +589,7 @@ function render(){
     <div style="font-size:11px;color:var(--muted)">teams tied for 1st</div></div>`;
   h+=`<div style="background:var(--card2);border-radius:6px;padding:12px;text-align:center">
     <div style="font-size:24px;font-weight:700;color:var(--gold)">+4</div>
-    <div style="font-size:11px;color:var(--muted)">projected cut line</div></div>`;
+    <div style="font-size:11px;color:var(--muted)">cut line (148)</div></div>`;
   h+=`</div></div>`;
 
   // Masters LB
@@ -601,9 +601,10 @@ function render(){
     const inPool=poolPlayerSet.has(e.name);
     const flag=flagFor(COUNTRIES[e.name]||"US");
     const pCl=parCls(e.toPar);
+    const mcLabel=e.mc?' <span style="color:var(--bad);font-size:10px;font-weight:600">MC</span>':"";
     h+=`<tr class="${inPool?"pool-player":""}">
       <td>${e.posStr}</td>
-      <td>${flag} ${e.name}${tourChip(e.name)}${inPool?" •":""}</td>
+      <td>${flag} ${e.name}${tourChip(e.name)}${inPool?" •":""}${mcLabel}</td>
       <td class="num">${e.r1??""}</td>
       <td class="num">${e.r2??"—"}</td>
       <td class="num ${pCl}" style="font-weight:600">${fmtPar(e.toPar)}</td></tr>`;
