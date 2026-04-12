@@ -226,7 +226,7 @@
 <body>
 <header>
   <h1><span class="live-dot"></span> 2026 Masters Pool — Live Results</h1>
-  <div class="subtitle"><span class="live-dot"></span> 26 Teams · 780 Clams 🐚 · Best 4 of 6 · Masters Sunday — Final Round LIVE</div>
+  <div class="subtitle">26 Teams · 780 Clams 🐚 · Best 4 of 6 · Tournament Complete — FINAL RESULTS</div>
   <a class="nav-link" href="index.html">← Back to Predictor Tool</a>
 </header>
 <div class="container" id="app"></div>
@@ -298,65 +298,37 @@ const R3 = {
 // R3 complete — no live tracking needed
 const R3_LIVE = {};
 
-// R4 scores: number = final, null = on course or not started
+// R4 scores — FINAL (confirmed via ESPN)
 const R4 = {
-  // Finished R4 (early groups)
-  "Keegan Bradley":66,"Gary Woodland":66,"Jon Rahm":68,
-  "Dustin Johnson":69,"Aaron Rai":70,"Si Woo Kim":72,
-  "Kurt Kitayama":72,"Sergio Garcia":75,"Charl Schwartzel":75,
-  "Rasmus Hojgaard":77
+  "Rory McIlroy":71,"Scottie Scheffler":68,"Tyrrell Hatton":66,"Russell Henley":68,
+  "Justin Rose":70,"Cameron Young":73,"Collin Morikawa":68,"Sam Burns":73,
+  "Max Homa":67,"Xander Schauffele":68,"Jake Knapp":70,
+  "Jordan Spieth":68,"Hideki Matsuyama":69,"Brooks Koepka":71,"Patrick Cantlay":73,
+  "Patrick Reed":73,"Jason Day":75,
+  "Maverick McNealy":67,"Viktor Hovland":67,"Matt Fitzpatrick":71,
+  "Keegan Bradley":66,"Ludvig Aberg":72,"Wyndham Clark":73,
+  "Matt McCarty":69,"Adam Scott":70,"Sam Stevens":70,"Brian Campbell":73,
+  "Michael Brennan":73,"Chris Gotterup":73,
+  "Alex Noren":70,"Harris English":72,"Shane Lowry":80,
+  "Gary Woodland":66,"Dustin Johnson":69,"Brian Harman":73,"Tommy Fleetwood":76,"Ben Griffin":77,
+  "Jon Rahm":68,"Ryan Gerard":77,"Haotong Li":80,
+  "Justin Thomas":73,"Jacob Bridgeman":76,"Sepp Straka":76,"Nick Taylor":77,"Kristoffer Reitan":77,
+  "Sungjae Im":77,"Si Woo Kim":72,"Aaron Rai":70,
+  "Corey Conners":75,"Marco Penge":78,"Kurt Kitayama":72,"Sergio Garcia":75,
+  "Rasmus Hojgaard":77,"Charl Schwartzel":75
 };
-// R4 live: players on course {thru, tp (today's to-par)}
-const R4_LIVE = {
-  "Jake Knapp":{thru:11,tp:-2},
-  "Ludvig Aberg":{thru:14,tp:-3},
-  "Xander Schauffele":{thru:14,tp:-2},
-  "Collin Morikawa":{thru:8,tp:-1},
-  "Patrick Reed":{thru:6,tp:0},
-  "Ben Griffin":{thru:10,tp:-1},
-  "Ryan Gerard":{thru:9,tp:-1},
-  "Brooks Koepka":{thru:8,tp:0},
-  "Tyrrell Hatton":{thru:7,tp:0},
-  "Wyndham Clark":{thru:7,tp:0},
-  "Matt Fitzpatrick":{thru:10,tp:-1},
-  "Michael Brennan":{thru:9,tp:0},
-  "Nick Taylor":{thru:9,tp:0},
-  "Max Homa":{thru:8,tp:-1},
-  "Chris Gotterup":{thru:7,tp:0},
-  "Kristoffer Reitan":{thru:7,tp:0},
-  "Brian Campbell":{thru:9,tp:-1},
-  "Tommy Fleetwood":{thru:6,tp:0},
-  "Russell Henley":{thru:4,tp:0},
-  "Patrick Cantlay":{thru:4,tp:0},
-  "Sungjae Im":{thru:11,tp:-1},
-  "Sepp Straka":{thru:11,tp:-1},
-  "Jacob Bridgeman":{thru:11,tp:-1},
-  "Hideki Matsuyama":{thru:8,tp:0},
-  "Jordan Spieth":{thru:10,tp:-2},
-  "Harris English":{thru:10,tp:-1},
-  "Marco Penge":{thru:11,tp:0},
-  "Sam Stevens":{thru:11,tp:0},
-  "Adam Scott":{thru:11,tp:0},
-  "Matt McCarty":{thru:11,tp:0},
-  "Viktor Hovland":{thru:10,tp:-1},
-  "Justin Thomas":{thru:10,tp:0}
-};
-// Tee times for players not yet started (final groups)
-const R4_TEE = {
-  "Cameron Young":"2:25 PM","Rory McIlroy":"2:25 PM",
-  "Sam Burns":"2:14 PM","Shane Lowry":"2:14 PM",
-  "Jason Day":"2:03 PM","Justin Rose":"2:03 PM",
-  "Scottie Scheffler":"1:52 PM","Haotong Li":"1:52 PM"
-};
+// R4 complete — no live tracking needed
+const R4_LIVE = {};
+const R4_TEE = {};
 
 const PAR = 72;
 const CUT_LINE = 148; // +4, confirmed
 const MC = new Set(["Bryson DeChambeau","Akshay Bhatia","Robert MacIntyre","Min Woo Lee",
   "J.J. Spaun","Bubba Watson","Cameron Smith","Tom McKibbin","Daniel Berger",
   "Ethan Fang","Fred Couples","Jose Maria Olazabal","Davis Riley","Aldrich Potgieter"]);
-const LAST_UPDATED = "Sun Apr 12, ~2:30 PM ET";
+const LAST_UPDATED = "Sun Apr 12 — FINAL";
 const R3_STATUS = "complete";
-const R4_STATUS = "in_progress";
+const R4_STATUS = "complete";
 
 // ─── Countries / Tours / Tags ─────────────────────────────────
 const COUNTRIES={"Scottie Scheffler":"US","Jon Rahm":"ES","Bryson DeChambeau":"US","Rory McIlroy":"GB","Ludvig Aberg":"SE","Xander Schauffele":"US","Cameron Young":"US","Tommy Fleetwood":"GB","Matt Fitzpatrick":"GB","Hideki Matsuyama":"JP","Collin Morikawa":"US","Min Woo Lee":"AU","Robert MacIntyre":"GB","Justin Rose":"GB","Brooks Koepka":"US","Jordan Spieth":"US","Patrick Reed":"US","Chris Gotterup":"US","Viktor Hovland":"NO","Si Woo Kim":"KR","Akshay Bhatia":"US","Russell Henley":"US","Justin Thomas":"US","Adam Scott":"AU","Patrick Cantlay":"US","Jake Knapp":"US","Shane Lowry":"IE","Jason Day":"AU","J.J. Spaun":"US","Sam Burns":"US","Gary Woodland":"US","Marco Penge":"GB","Ryan Gerard":"US","Cameron Smith":"AU","Dustin Johnson":"US","Harris English":"US","Kurt Kitayama":"US","Sergio Garcia":"ES","Bubba Watson":"US","Fred Couples":"US","Haotong Li":"CN","Ben Griffin":"US","Max Homa":"US","Keegan Bradley":"US","Tyrrell Hatton":"GB","Sepp Straka":"AT","Wyndham Clark":"US","Nick Taylor":"CA","Aaron Rai":"GB","Brian Campbell":"US","Michael Brennan":"US","Jacob Bridgeman":"US","Matt McCarty":"US","Kristoffer Reitan":"NO","Sam Stevens":"US"};
@@ -634,22 +606,38 @@ function render(){
 
   // Broadcast
   h+=`<div class="broadcast">
-    <h2>📺 The Nantzbot — Masters Sunday LIVE</h2>
-    <p><em>"Hello friends. Welcome to the final round of the Masters Tournament. The greatest day in sports is underway. The early wave is in. The mid-groups are battling through Amen Corner. And the leaders are about to walk to the first tee."</em></p>
+    <h2>📺 The Nantzbot — Final Broadcast</h2>
+    <div class="quote">"Hello friends. The 2026 Masters is complete. The azaleas have bloomed. The roars have echoed through the Georgia pines one final time. And when the shadows lengthened across the 18th green on this April Sunday, it was Rory McIlroy — again — slipping on the green jacket. Back to back. A tradition unlike any other... and a champion unlike any other."</div>
 
-    <p>Your leaderboard is <strong>live</strong>. Click any team to expand and see all six players — who's counting, who's on course, what hole they're on, and their score today. <em>This is your war room.</em></p>
+    <p><strong>Rory McIlroy</strong> wins the 2026 Masters at <span class="green">-12</span>, becoming the first back-to-back Masters champion since <strong>Tiger Woods</strong> in 2001-02. He built a six-shot lead through 36 holes, watched it evaporate on Moving Day when Cameron Young's 65 pulled even, then held his nerve on Sunday — a bogey on 18, but with a two-stroke cushion, it was enough. The Northern Irishman now has <strong>six major championships</strong>.</p>
 
-    <div class="quote">"Cameron Young and Rory McIlroy. Tied at -11. The final pairing. Tee time 2:25 PM. One is the defending champion with the weight of history. The other has never won a major. Both have 65s on their card this week. Only one gets the jacket."</div>
+    <p><strong>Scottie Scheffler</strong> fired a final-round <span class="green">68</span> to finish solo second at <span class="green">-11</span> — and in the process posted the first <strong>bogey-free weekend at Augusta since 1942</strong>. A 65 on Saturday, a 68 on Sunday — 133 strokes over 36 holes without a single blemish on one of golf's most demanding courses. An astonishing achievement that came up one stroke short.</p>
 
-    <p><strong>The early movers</strong>: <strong>Keegan Bradley</strong> posted a <span class="green">66</span> from the morning wave — that's a -3 total and it could hold up for a top-20 finish. <strong>Gary Woodland</strong> also fired <span class="green">66</span> to claw back to even par. The old guard isn't going quietly.</p>
+    <p><strong>Cameron Young</strong> shared third at <span class="green">-10</span> alongside <strong>Tyrrell Hatton</strong> (who fired Sunday's low round, a blistering <span class="green">66</span>), <strong>Russell Henley</strong>, and the ever-graceful <strong>Justin Rose</strong>. The Masters giveth and the Masters taketh away — Young's 73 on Sunday couldn't hold what his 65 on Saturday had built.</p>
 
-    <p><strong>On course right now</strong>: <strong>Jake Knapp</strong> is <span class="green">-2 today</span> through 11 and has climbed to <span class="green">-7</span> — right there with Scheffler. <strong>Ludvig Åberg</strong> is <span class="green">-3 through 14</span> and surging. <strong>Jordan Spieth</strong> — the 2015 champion — is <span class="green">-2 through 10</span> and climbing. The roars through Amen Corner are getting louder with every group.</p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <h2>🏆 Pool Results — Final</h2>
 
-    <p><strong>Scottie Scheffler</strong> tees off at <span class="callout">1:52 PM</span>, four shots back. <strong>Sam Burns</strong> at <span class="callout">2:14 PM</span>, one back. Then the final group: <strong>Young & McIlroy</strong> at <span class="callout">2:25 PM</span>. <em>The stage is set. The pines are ready. Augusta is waiting.</em></p>
+    <p><span class="callout">1ST PLACE — 546 CLAMS</span> <strong>Bryan McRee</strong> and "Butler Cabin Ballers" cruise to victory at <span class="green">-43</span>. His counting four? The tournament's four best finishers who appeared on pool rosters: <strong>Rory (-12), Scottie (-11), Cameron Young (-10), and Justin Rose (-10)</strong>. McRee had the lead from Round 2 onward and never relinquished it. A wire-to-wire dominance that will be talked about for years in this pool.</p>
 
-    <p>For your <strong>pool</strong>: expand each team below to track your players live. The counting four are highlighted in gold — the dropped two are dimmed. Watch for on-course players with the pulsing dot — their scores are changing in real time. Every birdie, every bogey, every roar you hear... it's moving your clams.</p>
+    <p><span class="callout">2ND PLACE — 156 CLAMS</span> <strong>Craig Roah</strong> finishes at <span class="green">-42</span>, <em>one agonizing stroke back</em>. Craig had the same Rory-Scottie-Rose core as McRee but counted <strong>Collin Morikawa (-9)</strong> where McRee had Cameron Young (-10). One stroke. That's all it was. Morikawa vs. Cam Young. That's the shot that separated 546 clams from 156.</p>
 
-    <p><em>"From the tower behind the 18th green... this is it, friends. The final round of the Masters. A tradition unlike any other."</em></p>
+    <p><span class="callout">3RD PLACE — 78 CLAMS</span> <strong>Frank Grecco</strong> and "Hello Friends" cash at <span class="green">-39</span> with Scottie, Rose, Cam Young, and Xander. A strong, steady build all week — never led, but never fell out of contention either.</p>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
+    <h2>📊 Lessons Learned for 2027</h2>
+
+    <p><strong>The Rory Factor</strong>: Only 9 of 26 teams (35%) drafted the defending champion. Those nine teams averaged <span class="green">-35</span>. The other seventeen averaged <span class="red">-28</span>. Rory at -12 was the single most valuable player in the pool, and two-thirds of the field passed on him. Lesson: <em>never fade the defending champ at Augusta.</em></p>
+
+    <p><strong>The Bryson Bust</strong>: 18 of 26 teams (69%) drafted Bryson DeChambeau. He missed the cut. Every single team that cashed — McRee, Roah, and Grecco — had Bryson on their roster but could absorb the MC because their other five players were strong enough to drop him. The teams that couldn't overcome the Bryson anchor sank to the bottom.</p>
+
+    <p><strong>The Rahm Trap</strong>: Jon Rahm was on 17 teams and finished <span class="red">+1</span>. Scottie Scheffler was on 20 teams and went <span class="green">-11</span>. The lesson? Betting on Scottie at Augusta is just good math — but the real alpha came from pairing him with Rory and the Rose/Cam Young tier, not Rahm.</p>
+
+    <p><strong>The Justin Rose Revival</strong>: Only 9 teams took Rose. He finished <span class="green">-10</span>, tied for third. Every single team in the top 7 of the pool had Justin Rose in their counting four. The 49-year-old who once contended here as a 17-year-old amateur showed Augusta is his cathedral.</p>
+
+    <p><strong>Tyrrell Hatton</strong>: Zero pool teams drafted him. He finished <span class="green">T3 at -10</span> with a final-round 66 — the low round of Sunday. The biggest miss in the entire pool. File that one away for 2027.</p>
+
+    <div class="quote">"And so another chapter at Augusta National comes to a close. Twenty-six teams. Seven hundred and eighty clams. One pool champion. Bryan McRee, your Butler Cabin Ballers are the 2026 Masters Pool champions. From the tower behind the 18th green... goodbye friends."</div>
   </div>`;
 
   // Insights
