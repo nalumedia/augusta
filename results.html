@@ -93,7 +93,7 @@
   .team-detail{display:none;padding:0 16px 14px}
   .team-row.expanded .team-detail{display:block}
   .player-grid{display:grid;gap:6px}
-  .player-line{display:grid;grid-template-columns:24px 1fr auto auto auto auto;align-items:center;gap:8px;padding:6px 10px;background:var(--card2);border-radius:5px;font-size:13px}
+  .player-line{display:grid;grid-template-columns:24px 1fr auto auto auto auto auto;align-items:center;gap:8px;padding:6px 10px;background:var(--card2);border-radius:5px;font-size:13px}
   .player-line.counting{border-left:3px solid var(--gold)}
   .player-line.dropped{opacity:.45;border-left:3px solid transparent}
   .player-flag{font-size:16px}
@@ -132,17 +132,91 @@
   .footer a{color:var(--gold);text-decoration:none}
   .updated{font-size:11px;color:var(--muted);text-align:right;padding:4px 0}
 
+  /* ═══ Augusta National–style scoreboard ═══ */
+  .scoreboard{margin-bottom:20px;position:relative;filter:drop-shadow(0 4px 16px rgba(0,0,0,.45))}
+  /* The arch / dome top */
+  .sb-arch{background:linear-gradient(180deg,#e8e2d0 0%,#f0ebdb 100%);
+    border-radius:50% 50% 0 0 / 28px 28px 0 0;
+    border:3px solid #b8a870;border-bottom:none;
+    padding:14px 20px 6px;text-align:center;position:relative;overflow:hidden}
+  .sb-arch::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#006633,#2e8b57,#006633)}
+  .sb-arch h2{font-family:Georgia,"Times New Roman",serif;font-size:28px;font-weight:900;
+    color:#1a1a1a;letter-spacing:6px;text-transform:uppercase;margin:0;
+    text-shadow:1px 1px 0 rgba(255,255,255,.5)}
+  .sb-arch .sb-subtitle{font-size:11px;color:#6b6348;letter-spacing:2px;text-transform:uppercase;margin-top:2px;font-weight:600}
+  /* Main body */
+  .sb-body{background:#f0ebdb;border:3px solid #b8a870;border-top:none;overflow:hidden}
+  .sb-controls{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;
+    background:linear-gradient(180deg,#e0dac8,#f0ebdb);border-bottom:1px solid #c8c0a0}
+  .sb-controls .sb-mode{font-size:11px;color:#6b6348;font-weight:600;letter-spacing:.5px}
+  .scoreboard-refresh{background:linear-gradient(180deg,#006633,#004d26);color:#f0ebdb;
+    border:1px solid #338855;padding:5px 14px;border-radius:4px;cursor:pointer;
+    font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:all .15s;
+    text-shadow:0 1px 1px rgba(0,0,0,.3)}
+  .scoreboard-refresh:hover{background:linear-gradient(180deg,#008844,#006633);transform:scale(1.02)}
+  .sb-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sb-table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+  /* Green header row */
+  .sb-table thead{position:sticky;top:0;z-index:2}
+  .sb-table th{background:linear-gradient(180deg,#006633,#004d26);color:#f0ebdb;
+    padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;text-align:center;
+    border-bottom:2px solid #002a14;font-family:Arial,Helvetica,sans-serif}
+  .sb-table th:first-child{text-align:center;width:52px;border-right:1px solid #005530}
+  .sb-table th:nth-child(2){text-align:left;min-width:170px;border-right:1px solid #005530}
+  .sb-table th.sb-rd{min-width:50px;border-right:1px solid #005530}
+  .sb-table th:last-child{border-right:none}
+  /* Cells */
+  .sb-table td{padding:7px 10px;text-align:center;
+    border-bottom:1px solid #cdc5a8;border-right:1px solid #d8d0b8;
+    background:#f0ebdb;color:#1a1a1a;font-weight:700;font-size:15px;
+    font-family:Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
+  .sb-table td:last-child{border-right:none}
+  .sb-table td:first-child{border-right:1px solid #cdc5a8;font-size:13px;color:#6b6348;font-family:Arial,sans-serif}
+  .sb-table td:nth-child(2){text-align:left;font-weight:800;font-size:14px;letter-spacing:1px;
+    text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;border-right:1px solid #cdc5a8}
+  /* Alternating rows */
+  .sb-table tr:nth-child(even) td{background:#e8e2ce}
+  .sb-table tr:hover td{background:#ddd7c0}
+  /* First place gold accent */
+  .sb-table tr.sb-first td{background:linear-gradient(90deg,rgba(212,168,71,.18),rgba(212,168,71,.08))}
+  .sb-table tr.sb-first:hover td{background:linear-gradient(90deg,rgba(212,168,71,.28),rgba(212,168,71,.15))}
+  .sb-table tr.sb-first td:first-child{background:rgba(212,168,71,.25)}
+  /* Score colors — Augusta uses RED for under par */
+  .sb-under{color:#c41e2a;font-weight:900}
+  .sb-over{color:#1a1a1a;font-weight:700}
+  .sb-even{color:#1a1a1a;font-weight:700}
+  .sb-total-cell{font-size:17px;font-weight:900;letter-spacing:1px}
+  .sb-move{font-size:10px;font-weight:700;margin-left:4px;font-family:Arial,sans-serif;vertical-align:middle}
+  .sb-move.up{color:#006633}.sb-move.dn{color:#c41e2a}.sb-move.fl{color:#999}
+  .sb-empty{color:#b8b098;font-weight:400;font-size:12px}
+  .sb-mc{font-size:8px;color:#c41e2a;font-weight:800;display:block;line-height:1;letter-spacing:.5px;font-family:Arial,sans-serif}
+  .sb-flag{display:inline-block;width:14px;height:10px;position:relative;margin-left:2px;vertical-align:middle}
+  .sb-flag::before{content:"🏌️";font-size:10px}
+  .sb-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#c41e2a;animation:pulse 1.5s infinite;margin-left:4px;vertical-align:middle}
+  /* Bottom bar */
+  .sb-footer{background:linear-gradient(180deg,#006633,#004d26);padding:6px 12px;
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:10px;color:rgba(240,235,219,.7);letter-spacing:.5px}
+  .sb-footer a{color:#d4a847;text-decoration:none;font-weight:600}
+  .sb-footer a:hover{text-decoration:underline}
+
   @media(max-width:700px){
     .prize-banner{grid-template-columns:1fr}.team-header{grid-template-columns:40px 1fr auto}
     .team-proj{display:none}.player-line{grid-template-columns:22px 1fr auto auto auto}
-    .player-pos{display:none}.insight-grid{grid-template-columns:1fr}.bar-row{grid-template-columns:80px 1fr 40px}
+    .player-pos{display:none}.player-line{grid-template-columns:22px 1fr auto auto auto auto}
+    .insight-grid{grid-template-columns:1fr}.bar-row{grid-template-columns:80px 1fr 40px}
+    .sb-arch h2{font-size:20px;letter-spacing:3px}
+    .sb-table{font-size:12px}.sb-table td,.sb-table th{padding:4px 6px}
+    .sb-table td{font-size:13px}.sb-total-cell{font-size:14px}
+    .sb-table th:nth-child(2){min-width:120px}
   }
 </style>
 </head>
 <body>
 <header>
   <h1><span class="live-dot"></span> 2026 Masters Pool — Live Results</h1>
-  <div class="subtitle">26 Teams · 780 Clams 🐚 · Best 4 of 6 · Round 2 Complete — Cut Day</div>
+  <div class="subtitle">26 Teams · 780 Clams 🐚 · Best 4 of 6 · Masters Sunday — Final Round</div>
   <a class="nav-link" href="index.html">← Back to Predictor Tool</a>
 </header>
 <div class="container" id="app"></div>
@@ -193,13 +267,34 @@ const R2 = {
   "Ethan Fang":78,"Jose Maria Olazabal":79,"Davis Riley":80
 };
 
+// R3 scores — FINAL (confirmed via ESPN, Moving Day complete)
+const R3 = {
+  "Cameron Young":65,"Scottie Scheffler":65,"Patrick Cantlay":66,"Russell Henley":66,
+  "Brian Harman":67,"Sam Burns":68,"Shane Lowry":68,"Jason Day":68,"Ryan Gerard":68,
+  "Collin Morikawa":68,"Rory McIlroy":73,
+  "Haotong Li":69,"Justin Rose":69,"Jake Knapp":69,"Ludvig Aberg":69,
+  "Brian Campbell":69,"Sepp Straka":69,"Jacob Bridgeman":69,"Sungjae Im":69,
+  "Ben Griffin":70,"Xander Schauffele":70,"Matt Fitzpatrick":70,"Michael Brennan":70,
+  "Nick Taylor":70,"Jordan Spieth":70,"Sam Stevens":70,"Adam Scott":70,
+  "Alex Noren":69,"Maverick McNealy":70,
+  "Max Homa":71,"Brooks Koepka":71,"Marco Penge":71,"Viktor Hovland":71,
+  "Justin Thomas":71,"Harris English":71,"Corey Conners":71,
+  "Patrick Reed":72,"Tyrrell Hatton":72,"Wyndham Clark":72,"Chris Gotterup":72,
+  "Matt McCarty":72,"Hideki Matsuyama":72,"Si Woo Kim":72,
+  "Tommy Fleetwood":73,"Kristoffer Reitan":73,"Jon Rahm":73,"Keegan Bradley":73,
+  "Rasmus Hojgaard":73,"Sergio Garcia":74,"Kurt Kitayama":75,"Dustin Johnson":75,
+  "Gary Woodland":76,"Charl Schwartzel":77,"Aaron Rai":78
+};
+// R3 complete — no live tracking needed
+const R3_LIVE = {};
+
 const PAR = 72;
 const CUT_LINE = 148; // +4, confirmed
 const MC = new Set(["Bryson DeChambeau","Akshay Bhatia","Robert MacIntyre","Min Woo Lee",
   "J.J. Spaun","Bubba Watson","Cameron Smith","Tom McKibbin","Daniel Berger",
   "Ethan Fang","Fred Couples","Jose Maria Olazabal","Davis Riley","Aldrich Potgieter"]);
-const LAST_UPDATED = "Fri Apr 10, 8:30 PM ET";
-const R2_STATUS = "complete";
+const LAST_UPDATED = "Sat Apr 11, 8:00 PM ET";
+const R3_STATUS = "complete";
 
 // ─── Countries / Tours / Tags ─────────────────────────────────
 const COUNTRIES={"Scottie Scheffler":"US","Jon Rahm":"ES","Bryson DeChambeau":"US","Rory McIlroy":"GB","Ludvig Aberg":"SE","Xander Schauffele":"US","Cameron Young":"US","Tommy Fleetwood":"GB","Matt Fitzpatrick":"GB","Hideki Matsuyama":"JP","Collin Morikawa":"US","Min Woo Lee":"AU","Robert MacIntyre":"GB","Justin Rose":"GB","Brooks Koepka":"US","Jordan Spieth":"US","Patrick Reed":"US","Chris Gotterup":"US","Viktor Hovland":"NO","Si Woo Kim":"KR","Akshay Bhatia":"US","Russell Henley":"US","Justin Thomas":"US","Adam Scott":"AU","Patrick Cantlay":"US","Jake Knapp":"US","Shane Lowry":"IE","Jason Day":"AU","J.J. Spaun":"US","Sam Burns":"US","Gary Woodland":"US","Marco Penge":"GB","Ryan Gerard":"US","Cameron Smith":"AU","Dustin Johnson":"US","Harris English":"US","Kurt Kitayama":"US","Sergio Garcia":"ES","Bubba Watson":"US","Fred Couples":"US","Haotong Li":"CN","Ben Griffin":"US","Max Homa":"US","Keegan Bradley":"US","Tyrrell Hatton":"GB","Sepp Straka":"AT","Wyndham Clark":"US","Nick Taylor":"CA","Aaron Rai":"GB","Brian Campbell":"US","Michael Brennan":"US","Jacob Bridgeman":"US","Matt McCarty":"US","Kristoffer Reitan":"NO","Sam Stevens":"US"};
@@ -250,28 +345,53 @@ function avg(a){return a.reduce((s,v)=>s+v,0)/a.length}
 
 // ─── Build leaderboard ──────────────────────────────────────
 function playerTotal(name){
-  const r1=R1[name]??null, r2=R2[name]??null;
+  const r1=R1[name]??null, r2=R2[name]??null, r3=R3[name]??null;
   if(r1==null)return null;
-  if(r2==null)return r1;
-  const raw=r1+r2;
-  // Pool rule: MC players capped at cut line
-  if(MC.has(name)&&raw>CUT_LINE)return CUT_LINE;
-  return raw;
+  // MC players capped at cut line (they have no R3/R4)
+  if(MC.has(name)){const raw=(r1||0)+(r2||0);return raw>CUT_LINE?CUT_LINE:raw;}
+  const rounds=[r1,r2,r3].filter(v=>v!=null);
+  return rounds.reduce((s,v)=>s+v,0);
 }
-function playerRounds(name){return{r1:R1[name]??null,r2:R2[name]??null}}
+// Current to-par including live R3 progress
+function playerLiveToPar(name){
+  const r1=R1[name]??null,r2=R2[name]??null,r3=R3[name]??null;
+  if(r1==null)return null;
+  if(MC.has(name)){const raw=(r1||0)+(r2||0);const cap=raw>CUT_LINE?CUT_LINE:raw;return cap-PAR*2;}
+  let total=(r1||0)+(r2||0)+(r3||0);
+  let rounds=(r1!=null?1:0)+(r2!=null?1:0)+(r3!=null?1:0);
+  // If on course in R3, add live data
+  if(r3==null&&R3_LIVE[name]){total+=(r2||0);rounds++;const live=R3_LIVE[name];return(total-PAR*rounds)+live.tp+PAR-((r2||0));}
+  return total-PAR*rounds;
+}
+function playerRounds(name){return{r1:R1[name]??null,r2:R2[name]??null,r3:R3[name]??null}}
 function isMC(name){return MC.has(name)}
-function totalToPar(name){const t=playerTotal(name);return t==null?null:t-(R2[name]!=null?PAR*2:PAR)}
+function roundCount(name){return(R1[name]!=null?1:0)+(R2[name]!=null?1:0)+(R3[name]!=null?1:0)}
+function totalToPar(name){
+  const r1=R1[name]??null,r2=R2[name]??null,r3=R3[name]??null;
+  if(r1==null)return null;
+  if(MC.has(name)){const raw=(r1||0)+(r2||0);const cap=raw>CUT_LINE?CUT_LINE:raw;return cap-PAR*2;}
+  const rounds=[r1,r2,r3].filter(v=>v!=null);
+  return rounds.reduce((s,v)=>s+v,0)-PAR*rounds.length;
+}
 
-// Masters LB using best available data
-const allPlayers=new Set([...Object.keys(R1),...Object.keys(R2)]);
+// Masters LB using best available data (R1+R2+R3+live)
+const allPlayers=new Set([...Object.keys(R1),...Object.keys(R2),...Object.keys(R3)]);
 const mastersLB=[...allPlayers].map(name=>{
-  const r1=R1[name]??null,r2=R2[name]??null;
-  const rounds=r2!=null?2:r1!=null?1:0;
-  const rawTotal=(r1||0)+(r2||0);
+  const r1=R1[name]??null,r2=R2[name]??null,r3=R3[name]??null;
   const mc=MC.has(name);
+  const finishedRounds=[r1,r2,r3].filter(v=>v!=null);
+  const rawTotal=finishedRounds.reduce((s,v)=>s+v,0);
+  const rounds=finishedRounds.length;
   const total=mc&&rawTotal>CUT_LINE?CUT_LINE:rawTotal;
-  const toPar=total-PAR*rounds;
-  return{name,r1,r2,total,toPar,rounds,mc};
+  let toPar=total-PAR*rounds;
+  // Add live R3 progress for leaderboard sorting
+  const live=R3_LIVE[name];
+  const onCourse=r3==null&&live!=null;
+  let liveToPar=toPar;
+  if(onCourse)liveToPar=toPar+live.tp;
+  const thru=onCourse?live.thru:r3!=null?"F":null;
+  const today=r3!=null?(r3-PAR):onCourse?live.tp:null;
+  return{name,r1,r2,r3,total,toPar:liveToPar,rounds,mc,thru,today,onCourse};
 }).filter(e=>e.rounds>0).sort((a,b)=>a.toPar-b.toPar||a.total-b.total);
 
 let mPos=1;
@@ -298,18 +418,24 @@ function buildTeams(){
     const players=raw.p.map(p=>{
       const name=normalize(p);
       poolPlayerSet.add(name);
-      const r1=R1[name]??null,r2=R2[name]??null;
-      const rounds=r2!=null?2:r1!=null?1:0;
-      const rawTotal=(r1||0)+(r2||0);
+      const r1=R1[name]??null,r2=R2[name]??null,r3=R3[name]??null;
       const mc=MC.has(name);
+      const finishedRounds=[r1,r2,r3].filter(v=>v!=null);
+      const rounds=finishedRounds.length;
+      const rawTotal=finishedRounds.reduce((s,v)=>s+v,0);
       const total=mc&&rawTotal>CUT_LINE?CUT_LINE:rawTotal;
-      const toPar=rounds>0?total-PAR*rounds:null;
+      const live=R3_LIVE[name];
+      const onCourse=r3==null&&live!=null&&!mc;
+      let toPar=rounds>0?total-PAR*rounds:null;
+      if(onCourse&&toPar!=null)toPar+=live.tp;
       const country=COUNTRIES[name]||"US";
       const entry=mastersLB.find(e=>e.name===name);
       const posStr=entry?entry.posStr:"—";
       const r1pos=r1PosMap[name]||99;
       const curPos=entry?entry.pos:99;
-      return{name,r1,r2,total,toPar,country,posStr,r1pos,curPos,rounds,mc};
+      const thru=onCourse?live.thru:r3!=null?"F":null;
+      const today=r3!=null?(r3-PAR):onCourse?live.tp:null;
+      return{name,r1,r2,r3,total,toPar,country,posStr,r1pos,curPos,rounds,mc,onCourse,thru,today};
     });
     const sorted=[...players].sort((a,b)=>{
       if(a.total===0&&b.total===0)return 0;if(a.total===0)return 1;if(b.total===0)return -1;
@@ -320,7 +446,8 @@ function buildTeams(){
     const dropped=sorted.slice(countN);
     const bestTotal=counting.reduce((s,p)=>s+(p.total||0),0);
     const bestRounds=counting.reduce((s,p)=>s+p.rounds,0);
-    const bestToPar=bestTotal-PAR*bestRounds;
+    // Use live-aware toPar so in-progress R3 is reflected
+    const bestToPar=counting.reduce((s,p)=>s+(p.toPar||0),0);
 
     // R1-only best4 for movement
     const r1sorted=[...players].sort((a,b)=>(a.r1||999)-(b.r1||999));
@@ -369,41 +496,101 @@ function render(){
 
   // Round status
   h+=`<div class="round-status">
-    <div class="round-label">${R2_STATUS==="complete"?"Round 2 Complete":"Round 2 In Progress"}</div>
+    <div class="round-label">${R3_STATUS==="complete"?"Round 3 Complete — Final Round Sunday":"Round 3 — Moving Day"}</div>
     <div class="round-info">Last updated: ${LAST_UPDATED}</div>
     <div class="round-dots">
       <div class="round-dot done">R1</div>
-      <div class="round-dot ${R2_STATUS==="complete"?"done":"active"}">R2</div>
-      <div class="round-dot">R3</div><div class="round-dot">R4</div>
+      <div class="round-dot done">R2</div>
+      <div class="round-dot done">R3</div>
+      <div class="round-dot active">R4</div>
     </div>
   </div>`;
 
+  // Augusta-style scoreboard
+  h+=`<div class="scoreboard">
+    <div class="sb-arch">
+      <h2>Leaders</h2>
+      <div class="sb-subtitle">2026 Masters Pool${R3_STATUS==="in_progress"?' · <span class="sb-live-dot"></span> Round 3 Live':' · Round 3 Complete'}</div>
+    </div>
+    <div class="sb-body">
+      <div class="sb-controls">
+        <span class="sb-mode">${useAll6?"All 6 Count":"Best 4 of 6"} · ${LAST_UPDATED}</span>
+        <button class="scoreboard-refresh" onclick="location.reload()">⟳ Refresh</button>
+      </div>
+      <div class="sb-wrap"><table class="sb-table">
+        <thead><tr>
+          <th>Par</th><th>Player</th>
+          <th class="sb-rd">R1</th><th class="sb-rd">R2</th><th class="sb-rd">R3</th><th class="sb-rd">R4</th>
+          <th>Tot</th>
+        </tr></thead><tbody>`;
+  TEAMS.forEach((t,i)=>{
+    const isFirst=t.pos===1;
+    const parStr=fmtPar(t.bestToPar);
+    const countN=useAll6?6:4;
+    const pls=t.players;
+    // R1 best-4 strokes
+    const r1scores=pls.map(p=>p.r1||999).sort((a,b)=>a-b).slice(0,countN);
+    const r1sum=r1scores.reduce((s,v)=>s+v,0);
+    // R2 best-4 strokes
+    const r2scores=pls.filter(p=>p.r2!=null).map(p=>p.r2).sort((a,b)=>a-b);
+    const r2sum=r2scores.length>=countN?r2scores.slice(0,countN).reduce((s,v)=>s+v,0):null;
+    // R3 best-4 (finished only, show what's done)
+    const r3scores=pls.filter(p=>p.r3!=null).map(p=>p.r3).sort((a,b)=>a-b);
+    const r3sum=r3scores.length>=countN?r3scores.slice(0,countN).reduce((s,v)=>s+v,0):null;
+    // How many on course
+    const onCourseN=pls.filter(p=>p.onCourse).length;
+    const r3cell=r3sum!=null?r3sum:(onCourseN>0?`<span style="color:#8b7a3e;font-size:11px;font-family:Arial,sans-serif">${pls.filter(p=>p.r3!=null).length}/${pls.length-pls.filter(p=>p.mc).length} in</span>`:'<span class="sb-empty">—</span>');
+    // Movement arrow
+    const mv=t.r1pos-t.pos;
+    const mvH=mv>0?`<span class="sb-move up">↑${mv}</span>`:mv<0?`<span class="sb-move dn">↓${Math.abs(mv)}</span>`:`<span class="sb-move fl">—</span>`;
+    // MC count
+    const mcCount=pls.filter(p=>p.mc).length;
+    const mcNote=mcCount>0?`<span class="sb-mc">${mcCount} MC</span>`:"";
+    // Par cell — red for under, black for over/even (Augusta style)
+    const parCellCl=t.bestToPar<0?"sb-under":"sb-even";
+    h+=`<tr class="${isFirst?"sb-first":""}">
+      <td class="${parCellCl}" style="font-size:17px;font-weight:900">${parStr}</td>
+      <td>${t.team}${mcNote}${mvH}</td>
+      <td class="sb-rd">${r1sum}</td>
+      <td class="sb-rd">${r2sum!=null?r2sum:'<span class="sb-empty">—</span>'}</td>
+      <td class="sb-rd">${r3cell}</td>
+      <td class="sb-rd"><span class="sb-empty">—</span></td>
+      <td class="sb-total-cell">${t.bestTotal}</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>
+    <div class="sb-footer">
+      <span>Best ${useAll6?"6":"4"} of 6 · 26 Teams · 780 Clams 🐚</span>
+      <a href="https://www.masters.com/en_US/scores/index.html" target="_blank">Live at Masters.com →</a>
+    </div>
+  </div></div>`;
+
   // Broadcast
   h+=`<div class="broadcast">
-    <h2>📺 The Nantzbot — Friday Night Wrap</h2>
-    <p><em>"Hello friends. What a Friday at Augusta National. What. A. Friday. The cut has fallen, the field has been sliced in half, and one man stands six shots clear of everyone else on the planet."</em></p>
+    <h2>📺 The Nantzbot — Masters Sunday Eve</h2>
+    <p><em>"Hello friends. Tomorrow is Sunday at the Masters. The greatest day in sports. And what Augusta has given us tonight is nothing short of a masterpiece of drama."</em></p>
 
-    <p><strong>Rory McIlroy</strong> fired a <span class="green">65</span> — seven birdies, zero bogeys — to reach <span class="callout">-12</span> and open up a <strong>six-shot lead</strong> at the halfway point. The defending champion hasn't just found form, he's found another gear entirely. <em>A tradition unlike any other: Rory McIlroy looking unbeatable at Augusta.</em></p>
+    <div class="quote">"Twenty-four hours ago, Rory McIlroy led by six. Tonight, he leads by zero. And the man who caught him? A 27-year-old who has never won a major."</div>
 
-    <div class="quote">"In 89 editions of the Masters, no one has ever held a six-shot lead at the halfway mark. Until tonight."</div>
+    <p><strong>Cameron Young</strong> fired a Moving Day <span class="green">65</span> — the low round of the tournament — to erase every last stroke of Rory's historic halfway lead. He is now tied at <span class="callout">-11</span> atop the Masters leaderboard. <em>They will walk to the first tee together tomorrow in the final group. One defending champion. One man who has never closed a major. This is Augusta.</em></p>
 
-    <p>Tied for second at <span class="green">-6</span>, <strong>Patrick Reed</strong> — Captain America himself — and <strong>Sam Burns</strong> are the closest pursuers. Reed backed up his opening 69 with another 69. The man just comes alive in April. Burns birdied three of his last five to salvage a 71 after a shaky front nine.</p>
+    <p><strong>Rory McIlroy</strong> shot <span class="red">73</span>. A six-shot lead — the largest in Masters halfway history — gone in 18 holes. He made bogeys at 5, 10, 11, and 12. Yes, <em>Amen Corner</em> bit the defending champion. But here's the thing about Rory: he's been here before. He's worn the jacket. And he still holds a share of the lead going into Sunday. <em>Do not count this man out.</em></p>
 
-    <p>The <strong>move of the day</strong> belongs to <strong>Tyrrell Hatton</strong> 🏴‍☠️ — the LIV man fired a scorching <span class="green">66</span> to rocket from <span class="red">+2</span> to <span class="green">-4</span>. Eight birdies. Eight. The English bulldog reminded everyone that Augusta doesn't care about your tour affiliation. Similarly, <strong>Cameron Young</strong> carded a <span class="green">67</span> to leap from +1 to -4. <em>Moving day came a day early for these two.</em></p>
+    <p><strong>Scottie Scheffler</strong> also fired a <span class="green">65</span>. The two-time champion went from <em>twelve shots back</em> on Friday night to <strong>four shots back</strong> on Saturday night. That's Augusta math, folks. He's at <span class="green">-7</span>, lurking like only a No. 1 player in the world can lurk. <em>He has won from further back. And he has those eyes tomorrow.</em></p>
 
-    <p><strong>Patrick Cantlay</strong> deserves a quiet standing ovation: after an ugly opening <span class="red">77</span>, he responded with a <span class="green">67</span> to claw back to even par. Ten-shot swing in 18 holes. That's Augusta — she gives you a chance to redeem yourself.</p>
+    <p><strong>Sam Burns</strong> sits alone in third at <span class="green">-10</span>, one shot back. <strong>Shane Lowry</strong> — the big Irishman — is at <span class="green">-9</span>. <strong>Jason Day</strong> and <strong>Justin Rose</strong> are tied at <span class="green">-8</span>. That's six men within three shots of the lead. Then Scheffler, <strong>Haotong Li</strong> 🇨🇳, <strong>Patrick Cantlay</strong>, <strong>Russell Henley</strong>, and <strong>Patrick Reed</strong> are all at <span class="green">-6</span> to <span class="green">-7</span>. <em>Eleven players within five shots on Masters Sunday. Buckle up.</em></p>
 
-    <p>And then there's the other side. <strong>Scottie Scheffler</strong> posted a <span class="red">74</span> and sits at even par, <em>twelve shots back</em>. The world No. 1 will need something historic over the weekend. <strong>Kurt Kitayama</strong> — who was <span class="green">-3</span> after a brilliant opening 69 — collapsed with a <span class="red">79</span> to fall to +4, right on the cut line. The Georgia pines giveth and taketh away.</p>
+    <p><strong>Cantlay</strong> deserves a standing ovation just for being here: <span class="red">77</span>-<span class="green">67</span>-<span class="green">66</span>. He has played the last 36 holes in 11 under par after one of the worst opening rounds in the field. <em>A tradition unlike any other: a man rewriting his story one round at a time.</em></p>
 
-    <div class="quote">"The cut fell at +4. One hundred and forty-eight strokes. And it claimed some very big names."</div>
+    <p>And a quiet word for <strong>Patrick Reed</strong> 🏴‍☠️ — Captain America cooled off with a 72 today but remains at <span class="green">-6</span>. Five shots back on Masters Sunday? He's won from worse. Don't sleep.</p>
 
-    <p><strong>Bryson DeChambeau</strong> 🏴‍☠️ is <span class="red">gone</span>. The self-proclaimed scientist couldn't solve Augusta's equation this week — 76-74 and out at +6. <strong>Akshay Bhatia</strong>, <strong>Bubba Watson</strong>, <strong>Cameron Smith</strong>, and <strong>J.J. Spaun</strong> — all missed the cut. For pool managers who loaded up on DeChambeau (and many of you did), his score is capped at the cut line per pool rules. Small mercies.</p>
+    <div class="quote">"The final pairing of Young and McIlroy tees off tomorrow afternoon. Scheffler will be two groups ahead. Burns one group back. This is every storyline you could ask for, written by Augusta herself."</div>
 
-    <p><strong>Jon Rahm</strong> 🏴‍☠️ survived — <em>barely</em>. A 70 today kept him right on the +4 line. He'll be here for the weekend, but twelve shots back of McIlroy, it would take the greatest weekend in Masters history. <em>Then again, this is Augusta. Stranger things have happened.</em></p>
+    <p>For your <strong>pool leaderboard</strong>: it's <em>wide open</em>. Teams with Cameron Young are suddenly sitting pretty after being middle-of-the-pack all week. Teams with Scheffler have surged into contention. Teams with Rory aren't panicking — he's still at -11 — but they're watching the door. Every team with a player in the top 15 has a shot at the clams tomorrow.</p>
 
-    <p>For your <strong>pool leaderboard</strong>: teams heavy on McIlroy, Reed, Burns, and Rose are soaring. Teams that went all-in on the big LIV names? They're feeling the sting of the cut. The separation at the top is real — but with 36 holes to go, that green jacket hasn't been fitted yet.</p>
+    <p>Sunday at the Masters. The final round. Green jackets. Roars through Amen Corner. Everything on the line.</p>
 
-    <p><em>"From the tower behind the 18th green, under a pink Georgia sky... don't you dare touch that dial. The weekend at the Masters starts tomorrow. See you on the first tee."</em></p>
+    <p><em>"From the tower behind the 18th green... sleep well tonight, friends. Tomorrow, history will be made on these hallowed grounds. A tradition unlike any other. The Masters, on CBS."</em></p>
   </div>`;
 
   // Insights
@@ -416,7 +603,7 @@ function render(){
 
   h+=`<div class="insight-grid">`;
   // LIV vs PGA
-  h+=`<div class="insight-card"><h3>🏴‍☠️ LIV vs PGA — Pool Players (Thru R2)</h3>
+  h+=`<div class="insight-card"><h3>🏴‍☠️ LIV vs PGA — Pool Players (Live)</h3>
     <div class="vs-grid">
       <div class="vs-side"><div class="vs-label" style="color:var(--liv)">LIV Golf</div>
         <div class="vs-score ${livWin?"good":"bad"}">${livAvg>0?"+":""}${livAvg}</div>
@@ -498,7 +685,7 @@ function render(){
       <button class="toggle-btn ${useAll6?"active":""}" onclick="setMode(true)">All 6 Count</button>
       <button class="refresh-btn" onclick="window.open('https://www.masters.com/en_US/scores/index.html','_blank')">⟳ Live Scores at Masters.com</button>
     </div>
-    <div class="updated">${R2_STATUS==="in_progress"?"⚡ R2 in progress — scores are estimates until round completes":"✓ Scores final through Round 2"}</div>
+    <div class="updated">${R3_STATUS==="complete"?"✓ Scores final through Round 3 · Final round Sunday":"⚡ R3 in progress — live scores updating"}</div>
   </div>`;
 
   // Team leaderboard
@@ -543,11 +730,15 @@ function render(){
       const pPar=p.toPar!=null?fmtPar(p.toPar):"—";
       const pCl=p.toPar!=null?parCls(p.toPar):"even";
       const mcTag=p.mc?` <span style="font-size:10px;color:var(--bad);font-weight:600">MC</span>`:"";
+      const liveTag=p.onCourse?` <span style="font-size:10px;color:var(--accent);font-weight:600">thru ${p.thru}</span>`:"";
+      const todayStr=p.today!=null?fmtPar(p.today):"";
+      const todayCl=p.today!=null?parCls(p.today):"even";
       h+=`<div class="player-line counting">
         <div class="player-flag">${flagFor(p.country)}</div>
-        <div class="player-name">${p.name}${tourChip(p.name)}${mcTag}</div>
+        <div class="player-name">${p.name}${tourChip(p.name)}${mcTag}${liveTag}</div>
         <div class="player-r">${p.r1??"—"}</div>
         <div class="player-r">${p.r2??"—"}</div>
+        <div class="player-r">${p.r3??((p.onCourse)?`<span class="${todayCl}" style="font-size:11px">${todayStr}*</span>`:"—")}</div>
         <div class="player-par ${pCl}">${pPar}</div>
       </div>`;
     });
@@ -558,11 +749,15 @@ function render(){
         const pPar=p.toPar!=null?fmtPar(p.toPar):"—";
         const pCl=p.toPar!=null?parCls(p.toPar):"even";
         const mcTag=p.mc?` <span style="font-size:10px;color:var(--bad);font-weight:600">MC</span>`:"";
+        const liveTag=p.onCourse?` <span style="font-size:10px;color:var(--accent);font-weight:600">thru ${p.thru}</span>`:"";
+        const todayStr=p.today!=null?fmtPar(p.today):"";
+        const todayCl=p.today!=null?parCls(p.today):"even";
         h+=`<div class="player-line dropped">
           <div class="player-flag">${flagFor(p.country)}</div>
-          <div class="player-name">${p.name}${tourChip(p.name)}${mcTag}</div>
+          <div class="player-name">${p.name}${tourChip(p.name)}${mcTag}${liveTag}</div>
           <div class="player-r">${p.r1??"—"}</div>
           <div class="player-r">${p.r2??"—"}</div>
+          <div class="player-r">${p.r3??((p.onCourse)?`<span class="${todayCl}" style="font-size:11px">${todayStr}*</span>`:"—")}</div>
           <div class="player-par ${pCl}">${pPar}</div>
         </div>`;
       });
@@ -594,19 +789,25 @@ function render(){
 
   // Masters LB
   h+=`<div class="card"><h2>Masters Tournament Leaderboard</h2>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">• = pool player · Sorted by total to par</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">• = pool player · Sorted by total to par · <span style="color:var(--accent)">* = on course</span></div>
     <div class="masters-lb"><table>
-      <thead><tr><th>Pos</th><th>Player</th><th class="num">R1</th><th class="num">R2</th><th class="num">Tot</th></tr></thead><tbody>`;
+      <thead><tr><th>Pos</th><th>Player</th><th class="num">R1</th><th class="num">R2</th><th class="num">R3</th><th class="num">Thru</th><th class="num">Tot</th></tr></thead><tbody>`;
   mastersLB.forEach(e=>{
     const inPool=poolPlayerSet.has(e.name);
     const flag=flagFor(COUNTRIES[e.name]||"US");
     const pCl=parCls(e.toPar);
     const mcLabel=e.mc?' <span style="color:var(--bad);font-size:10px;font-weight:600">MC</span>':"";
-    h+=`<tr class="${inPool?"pool-player":""}">
+    const todayStr=e.today!=null?fmtPar(e.today):"";
+    const todayCl=e.today!=null?parCls(e.today):"even";
+    const r3cell=e.r3!=null?e.r3:(e.onCourse?`<span class="${todayCl}" style="font-size:12px">${todayStr}*</span>`:"");
+    const thruCell=e.thru==="F"?"F":(e.thru!=null?e.thru:"—");
+    h+=`<tr class="${inPool?"pool-player":""}${e.onCourse?" on-course":""}">
       <td>${e.posStr}</td>
       <td>${flag} ${e.name}${tourChip(e.name)}${inPool?" •":""}${mcLabel}</td>
       <td class="num">${e.r1??""}</td>
       <td class="num">${e.r2??"—"}</td>
+      <td class="num">${r3cell}</td>
+      <td class="num" style="font-size:11px;color:${e.onCourse?"var(--accent)":"var(--muted)"}">${thruCell}</td>
       <td class="num ${pCl}" style="font-weight:600">${fmtPar(e.toPar)}</td></tr>`;
   });
   h+=`</tbody></table></div></div>`;
